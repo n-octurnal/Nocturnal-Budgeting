@@ -275,7 +275,63 @@
     background: var(--surface2);
     border-radius: 12px;
     padding: 12px;
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+    transition: transform 0.15s ease;
+    user-select: none;
   }
+  .alloc-item.swiping { transition: none; }
+  .alloc-swipe-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--danger);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 16px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+  }
+  .alloc-swipe-bg span {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .alloc-content { position: relative; z-index: 1; }
+
+  /* CONFIRM MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 16px 32px;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+  .modal-btns { display: flex; gap: 10px; }
+
   .alloc-name { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
   .alloc-val { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); }
   .alloc-pct { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
@@ -412,26 +468,28 @@
   </div>
 
   <div class="section-label">Allocation</div>
-  <div class="alloc-grid" id="alloc-grid">
-    <div class="alloc-item">
-      <div class="alloc-name">🎵 Nocturnal Records</div>
-      <div class="alloc-val">$269</div>
-      <div class="alloc-pct">30% surplus</div>
+  <div id="alloc-grid" class="alloc-grid"></div>
+  <div style="margin-top:10px;">
+    <button class="btn secondary" onclick="toggleAllocForm()" style="width:100%;font-size:12px;">+ Add / Edit Allocation</button>
+  </div>
+
+  <div id="alloc-form" style="display:none;background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:16px;margin-top:10px;">
+    <div class="card-label" style="color:var(--accent);margin-bottom:10px;">Manage Allocations</div>
+    <div class="form-row">
+      <label class="form-label">Name</label>
+      <input type="text" id="alloc-name" placeholder="e.g. Savings, Gym, etc.">
     </div>
-    <div class="alloc-item">
-      <div class="alloc-name">📷 Camera Fund</div>
-      <div class="alloc-val">$400</div>
-      <div class="alloc-pct">monthly</div>
+    <div class="form-row">
+      <label class="form-label">Amount ($)</label>
+      <input type="number" id="alloc-amount" placeholder="0">
     </div>
-    <div class="alloc-item">
-      <div class="alloc-name">🛡️ Emergency</div>
-      <div class="alloc-val">$150</div>
-      <div class="alloc-pct">buffer</div>
+    <div class="form-row">
+      <label class="form-label">Emoji (optional)</label>
+      <input type="text" id="alloc-emoji" placeholder="🎯" maxlength="2">
     </div>
-    <div class="alloc-item">
-      <div class="alloc-name">💳 Parents</div>
-      <div class="alloc-val">$170</div>
-      <div class="alloc-pct">immediate</div>
+    <div class="input-row">
+      <button class="btn" onclick="addAlloc()" style="flex:1">Add</button>
+      <button class="btn secondary" onclick="toggleAllocForm()">Cancel</button>
     </div>
   </div>
 
@@ -697,19 +755,63 @@
   let INCOME = 1736;
   const BASE_EXPENSES = 840;
 
+  function currentMonth() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+
   // State
   let state = {
     income: 1736,
     goals: { er: 0, cam: 0, nr: 0 },
     expenses: [],
-    vinyl: []
+    expenseMonth: currentMonth(),
+    expenseHistory: [],
+    vinyl: [],
+    allocations: [
+      { id: 1, emoji: '🎵', name: 'Nocturnal Records', amount: 269, committed: 0, done: false },
+      { id: 2, emoji: '📷', name: 'Camera Fund', amount: 400, committed: 0, done: false },
+      { id: 3, emoji: '🛡️', name: 'Emergency', amount: 150, committed: 0, done: false },
+      { id: 4, emoji: '💳', name: 'Parents', amount: 170, committed: 0, done: false }
+    ]
   };
 
   // Load from localStorage
   function loadState() {
     try {
       const saved = localStorage.getItem('nocturnal-state');
-      if (saved) state = JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+        if (!state.allocations || state.allocations.length === 0) {
+          state.allocations = [
+            { id: 1, emoji: '🎵', name: 'Nocturnal Records', amount: 269, committed: 0, done: false },
+            { id: 2, emoji: '📷', name: 'Camera Fund', amount: 400, committed: 0, done: false },
+            { id: 3, emoji: '🛡️', name: 'Emergency', amount: 150, committed: 0, done: false },
+            { id: 4, emoji: '💳', name: 'Parents', amount: 170, committed: 0, done: false }
+          ];
+        }
+        // Migrate old allocations that don't have committed/done fields
+        state.allocations = state.allocations.map(a => ({
+          committed: 0, done: false, ...a
+        }));
+        // Auto monthly reset for expenses
+        if (!state.expenseMonth) state.expenseMonth = currentMonth();
+        if (!state.expenseHistory) state.expenseHistory = [];
+        if (state.expenseMonth !== currentMonth()) {
+          // Archive old month
+          if (state.expenses && state.expenses.length > 0) {
+            state.expenseHistory.unshift({ month: state.expenseMonth, expenses: state.expenses });
+            if (state.expenseHistory.length > 6) state.expenseHistory = state.expenseHistory.slice(0, 6);
+          }
+          // Reset expenses and alloc committed for new month
+          state.expenses = [];
+          state.expenseMonth = currentMonth();
+          state.allocations = state.allocations.map(a => ({ ...a, committed: 0, done: false }));
+          saveState();
+          toast('New month — expenses reset ✓');
+        }
+      }
       INCOME = state.income || 1736;
     } catch(e) {}
   }
@@ -755,10 +857,230 @@
     document.getElementById('dash-bar').style.width = Math.max(0, Math.min(100, pct)) + '%';
     document.getElementById('dash-pct').textContent = pct + '% surplus';
 
-    // Goals on dashboard
+    renderAlloc();
     updateGoalBar('er', 2520, 'er-bar', 'er-saved');
     updateGoalBar('cam', 3000, 'cam-bar', 'cam-saved');
     updateGoalBar('nr', 3228, 'nr-bar', 'nr-saved');
+  }
+
+  // Allocations
+  function toggleAllocForm() {
+    const f = document.getElementById('alloc-form');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function addAlloc() {
+    const name = document.getElementById('alloc-name').value.trim();
+    const amount = parseFloat(document.getElementById('alloc-amount').value);
+    const emoji = document.getElementById('alloc-emoji').value.trim() || '💰';
+    if (!name || isNaN(amount) || amount <= 0) { toast('Fill in name and amount'); return; }
+    if (!state.allocations) state.allocations = [];
+    state.allocations.push({ id: Date.now(), emoji, name, amount });
+    saveState();
+    document.getElementById('alloc-name').value = '';
+    document.getElementById('alloc-amount').value = '';
+    document.getElementById('alloc-emoji').value = '';
+    toggleAllocForm();
+    renderAlloc();
+    toast('Allocation added ✓');
+  }
+
+  function deleteAlloc(id) {
+    state.allocations = state.allocations.filter(a => a.id !== id);
+    saveState();
+    renderAlloc();
+  }
+
+  function editAllocAmount(id) {
+    // Remove any existing inline editor
+    const existing = document.getElementById('inline-alloc-edit');
+    if (existing) existing.remove();
+    if (window._editingAllocId === id) { window._editingAllocId = null; return; }
+    window._editingAllocId = id;
+
+    const alloc = state.allocations.find(a => a.id === id);
+    if (!alloc) return;
+
+    const editor = document.createElement('div');
+    editor.id = 'inline-alloc-edit';
+    editor.style.cssText = 'background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:16px;margin-top:10px;';
+    editor.innerHTML = `
+      <div class="card-label" style="color:var(--accent);margin-bottom:10px;">Edit: ${alloc.emoji} ${alloc.name}</div>
+      <div class="input-row">
+        <input type="number" id="inline-alloc-input" placeholder="New amount" value="${alloc.amount}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;outline:none;">
+        <button class="btn" onclick="saveAllocEdit(${id})">Save</button>
+      </div>
+      <button class="btn secondary" onclick="cancelAllocEdit()" style="width:100%;margin-top:8px;">Cancel</button>
+    `;
+
+    const grid = document.getElementById('alloc-grid');
+    grid.parentNode.insertBefore(editor, grid.nextSibling);
+    document.getElementById('inline-alloc-input').focus();
+  }
+
+  function saveAllocEdit(id) {
+    const val = parseFloat(document.getElementById('inline-alloc-input').value);
+    if (isNaN(val) || val < 0) { toast('Enter a valid amount'); return; }
+    const alloc = state.allocations.find(a => a.id === id);
+    if (alloc) { alloc.amount = val; saveState(); }
+    cancelAllocEdit();
+    renderAlloc();
+    toast('Updated ✓');
+  }
+
+  function cancelAllocEdit() {
+    const el = document.getElementById('inline-alloc-edit');
+    if (el) el.remove();
+    window._editingAllocId = null;
+  }
+
+  function addAllocCommit(id) {
+    const existing = document.getElementById('inline-alloc-edit');
+    if (existing) existing.remove();
+    if (window._editingAllocId === id) { window._editingAllocId = null; return; }
+    window._editingAllocId = id;
+
+    const alloc = state.allocations.find(a => a.id === id);
+    if (!alloc) return;
+
+    const editor = document.createElement('div');
+    editor.id = 'inline-alloc-edit';
+    editor.style.cssText = 'background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:16px;margin-top:10px;grid-column:1/-1;';
+    editor.innerHTML = `
+      <div class="card-label" style="color:var(--accent);margin-bottom:6px;">${alloc.emoji} ${alloc.name} — log committed</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;">How much did you actually move this month?</div>
+      <div class="input-row">
+        <input type="number" id="inline-alloc-input" placeholder="Amount committed" value="${alloc.committed || 0}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;outline:none;">
+        <button class="btn" onclick="saveAllocCommit(${id})">Save</button>
+      </div>
+      <button class="btn secondary" onclick="cancelAllocEdit()" style="width:100%;margin-top:8px;">Cancel</button>
+    `;
+
+    const grid = document.getElementById('alloc-grid');
+    grid.parentNode.insertBefore(editor, grid.nextSibling);
+    document.getElementById('inline-alloc-input').focus();
+  }
+
+  function saveAllocCommit(id) {
+    const val = parseFloat(document.getElementById('inline-alloc-input').value);
+    if (isNaN(val) || val < 0) { toast('Enter a valid amount'); return; }
+    const alloc = state.allocations.find(a => a.id === id);
+    if (alloc) {
+      alloc.committed = val;
+      alloc.done = val >= alloc.amount;
+      saveState();
+    }
+    cancelAllocEdit();
+    renderAlloc();
+    toast(alloc && alloc.done ? '✓ Allocation complete!' : 'Progress saved ✓');
+  }
+
+  function renderAlloc() {
+    if (!state.allocations) state.allocations = [];
+    const grid = document.getElementById('alloc-grid');
+    const month = new Date().toLocaleString('default', { month: 'long' });
+
+    grid.innerHTML = state.allocations.map(a => {
+      const committed = a.committed || 0;
+      const pct = Math.min((committed / a.amount) * 100, 100);
+      const done = a.done || committed >= a.amount;
+      return `
+        <div class="alloc-item${done ? '" style="border:1px solid rgba(200,255,0,0.3);' : '"'} data-id="${a.id}">
+          <div class="alloc-swipe-bg"><span>REMOVE</span></div>
+          <div class="alloc-content">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="alloc-name">${a.emoji} ${a.name}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;">
+              <div class="alloc-val" onclick="editAllocAmount(${a.id})" style="cursor:pointer;">${fmt(a.amount)}</div>
+              ${done ? '<div style="font-size:16px;">✅</div>' : `<div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">${fmt(committed)}</div>`}
+            </div>
+            <div style="background:var(--surface);border-radius:99px;height:4px;margin:6px 0 4px;overflow:hidden;">
+              <div style="height:100%;border-radius:99px;width:${pct}%;background:${done ? 'var(--accent)' : 'var(--accent2)'};transition:width 0.6s ease;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="alloc-pct">${Math.round(pct)}% · ${month}</div>
+              <button onclick="addAllocCommit(${a.id})" style="background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;padding:2px 0;">${done ? 'edit' : '+ log'}</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    setupAllocSwipe();
+  }
+
+  // Swipe to delete
+  function setupAllocSwipe() {
+    document.querySelectorAll('.alloc-item[data-id]').forEach(el => {
+      let startX = 0, currentX = 0, dragging = false;
+      const THRESHOLD = 60;
+
+      el.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        dragging = true;
+        el.classList.add('swiping');
+      }, { passive: true });
+
+      el.addEventListener('touchmove', e => {
+        if (!dragging) return;
+        currentX = e.touches[0].clientX - startX;
+        if (currentX < 0) {
+          const dist = Math.min(Math.abs(currentX), 100);
+          el.style.transform = `translateX(${-dist}px)`;
+          const bg = el.querySelector('.alloc-swipe-bg');
+          if (bg) bg.style.opacity = Math.min(dist / THRESHOLD, 1);
+        }
+      }, { passive: true });
+
+      el.addEventListener('touchend', () => {
+        dragging = false;
+        el.classList.remove('swiping');
+        if (currentX < -THRESHOLD) {
+          const id = parseInt(el.dataset.id);
+          el.style.transform = '';
+          const bg = el.querySelector('.alloc-swipe-bg');
+          if (bg) bg.style.opacity = 0;
+          showDeleteConfirm(id);
+        } else {
+          el.style.transform = '';
+          const bg = el.querySelector('.alloc-swipe-bg');
+          if (bg) bg.style.opacity = 0;
+        }
+        currentX = 0;
+      });
+    });
+  }
+
+  // Confirm modal
+  function showDeleteConfirm(id) {
+    const alloc = state.allocations.find(a => a.id === id);
+    if (!alloc) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'delete-modal';
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-title">Remove ${alloc.emoji} ${alloc.name}?</div>
+        <div class="modal-sub">This will permanently delete this allocation category.</div>
+        <div class="modal-btns">
+          <button class="btn danger" onclick="confirmDeleteAlloc(${id})" style="flex:1;">Remove</button>
+          <button class="btn secondary" onclick="closeModal()" style="flex:1;">Cancel</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  function confirmDeleteAlloc(id) {
+    closeModal();
+    deleteAlloc(id);
+    toast('Allocation removed');
+  }
+
+  function closeModal() {
+    const m = document.getElementById('delete-modal');
+    if (m) m.remove();
   }
 
   // Income editing
