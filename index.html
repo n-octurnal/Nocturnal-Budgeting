@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>Nocturnal</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --accent: #c8ff00;
+    --accent2: #ff6b35;
+    --accent3: #a78bfa;
+    --text: #f0f0f0;
+    --muted: #55556a;
+    --border: #22222f;
+    --danger: #ff4444;
+    --safe: bottom env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(13,13,20,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 4px 0;
+  }
+
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn svg { width: 22px; height: 22px; stroke-width: 1.5; }
+
+  /* PAGES */
+  .page { display: none; padding: 0 16px; padding-top: 24px; }
+  .page.active { display: block; animation: fadeUp 0.3s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* HEADER */
+  .page-header { margin-bottom: 24px; }
+  .page-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .page-title { font-size: 28px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .page-title span { color: var(--accent); }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .card-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* INCOME CARD */
+  .income-card {
+    background: var(--accent);
+    color: #000;
+    border-radius: 16px;
+    padding: 20px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .income-card .card-label { color: rgba(0,0,0,0.5); margin-bottom: 4px; }
+  .income-card .big { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .income-card .small { font-family: 'Space Mono', monospace; font-size: 10px; opacity: 0.6; }
+
+  /* SURPLUS ROW */
+  .split-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .split-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .split-card .val { font-size: 22px; font-weight: 800; margin-top: 4px; }
+  .split-card.green .val { color: var(--accent); }
+  .split-card.orange .val { color: var(--accent2); }
+
+  /* PROGRESS BAR */
+  .bar-track {
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+    margin: 10px 0 6px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* GOAL CARD */
+  .goal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .goal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .goal-name { font-size: 15px; font-weight: 800; }
+  .goal-meta { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 3px; }
+  .goal-emoji { font-size: 22px; }
+  .goal-amounts { display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px; }
+  .goal-amounts .saved { color: var(--text); font-weight: 700; }
+
+  /* INPUT */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  input[type="number"], input[type="text"] {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+
+  .btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .btn:active { opacity: 0.8; }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  /* EXPENSE LIST */
+  .expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .expense-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .expense-item:first-child { padding-top: 0; }
+  .expense-name { font-size: 14px; font-weight: 700; }
+  .expense-tag { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .expense-right { display: flex; align-items: center; gap: 10px; }
+  .expense-amt { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent2); }
+  .del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 2px; }
+  .del-btn:active { color: var(--danger); }
+
+  /* VINYL ITEMS */
+  .vinyl-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .vinyl-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .vinyl-item:first-child { padding-top: 0; }
+  .vinyl-title { font-size: 14px; font-weight: 700; }
+  .vinyl-meta { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .vinyl-right { text-align: right; }
+  .vinyl-price { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); }
+  .vinyl-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    margin-top: 3px;
+    display: inline-block;
+  }
+  .vinyl-status.listed { background: rgba(200,255,0,0.15); color: var(--accent); }
+  .vinyl-status.sold { background: rgba(255,107,53,0.15); color: var(--accent2); }
+  .vinyl-status.unlisted { background: rgba(85,85,106,0.2); color: var(--muted); }
+
+  /* ALLOC GRID */
+  .alloc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .alloc-item {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .alloc-name { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .alloc-val { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); }
+  .alloc-pct { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 10px;
+  }
+
+  /* STATS ROW */
+  .stats-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .stat-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-val { font-size: 20px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 3px; }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .form-row { margin-bottom: 10px; }
+  .form-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 6px; display: block; }
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  select:focus { border-color: var(--accent); }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 99px;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-label">Nocturnal OS</div>
+    <div class="page-title">YOUR<br><span>MONEY</span></div>
+  </div>
+
+  <div class="income-card" id="income-display-card" onclick="toggleIncomeEdit()">
+    <div>
+      <div class="card-label">Monthly Take-Home</div>
+      <div class="big" id="income-display">$1,736</div>
+      <div class="small">tap to update · 24hrs · $20.50/hr</div>
+    </div>
+    <div style="text-align:right">
+      <div class="card-label">Amazon</div>
+      <div style="font-size:18px;font-weight:800;">Part-Time</div>
+      <div class="small">→ Blue Badge goal</div>
+    </div>
+  </div>
+
+  <div id="income-edit-card" style="display:none;background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:16px;margin-bottom:12px;">
+    <div class="card-label" style="color:var(--accent)">Update Monthly Take-Home</div>
+    <div style="margin-top:8px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;">Enter your actual monthly take-home after taxes</div>
+    <div class="input-row">
+      <input type="number" id="income-input" placeholder="e.g. 1736">
+      <button class="btn" onclick="updateIncome()">Save</button>
+    </div>
+    <button class="btn secondary" onclick="toggleIncomeEdit()" style="width:100%;margin-top:8px;">Cancel</button>
+  </div>
+
+  <div class="split-row">
+    <div class="split-card green">
+      <div class="card-label">Surplus</div>
+      <div class="val" id="dash-surplus">$896</div>
+    </div>
+    <div class="split-card orange">
+      <div class="card-label">Expenses</div>
+      <div class="val" id="dash-expenses">$840</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Surplus Rate</div>
+    <div class="bar-track">
+      <div class="bar-fill" id="dash-bar" style="width:51%;background:var(--accent)"></div>
+    </div>
+    <div class="bar-labels">
+      <span>$0</span>
+      <span id="dash-pct">51% surplus</span>
+      <span id="dash-income-max">$1,736</span>
+    </div>
+  </div>
+
+  <div class="section-label">Allocation</div>
+  <div class="alloc-grid" id="alloc-grid">
+    <div class="alloc-item">
+      <div class="alloc-name">🎵 Nocturnal Records</div>
+      <div class="alloc-val">$269</div>
+      <div class="alloc-pct">30% surplus</div>
+    </div>
+    <div class="alloc-item">
+      <div class="alloc-name">📷 Camera Fund</div>
+      <div class="alloc-val">$400</div>
+      <div class="alloc-pct">monthly</div>
+    </div>
+    <div class="alloc-item">
+      <div class="alloc-name">🛡️ Emergency</div>
+      <div class="alloc-val">$150</div>
+      <div class="alloc-pct">buffer</div>
+    </div>
+    <div class="alloc-item">
+      <div class="alloc-name">💳 Parents</div>
+      <div class="alloc-val">$170</div>
+      <div class="alloc-pct">immediate</div>
+    </div>
+  </div>
+
+  <div class="section-label">Goals Progress</div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">Emergency Fund</div>
+        <div class="goal-meta">target: $2,520 · stress shield</div>
+      </div>
+      <div class="goal-emoji">🛡️</div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="er-bar" style="width:0%;background:#4ade80"></div>
+    </div>
+    <div class="goal-amounts">
+      <span class="saved" id="er-saved">$0 saved</span>
+      <span>$2,520</span>
+    </div>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">Sony A7 IV</div>
+        <div class="goal-meta">target: $3,000 · brand asset</div>
+      </div>
+      <div class="goal-emoji">📷</div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="cam-bar" style="width:0%;background:var(--accent)"></div>
+    </div>
+    <div class="goal-amounts">
+      <span class="saved" id="cam-saved">$0 saved</span>
+      <span>$3,000</span>
+    </div>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">Nocturnal Records</div>
+        <div class="goal-meta">annual target: $3,228 · inventory</div>
+      </div>
+      <div class="goal-emoji">🎵</div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="nr-bar" style="width:0%;background:var(--accent2)"></div>
+    </div>
+    <div class="goal-amounts">
+      <span class="saved" id="nr-saved">$0 invested</span>
+      <span>$3,228</span>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSES -->
+<div class="page" id="page-expenses">
+  <div class="page-header">
+    <div class="page-label">Track</div>
+    <div class="page-title">EX<span>PENSES</span></div>
+  </div>
+
+  <div class="split-row">
+    <div class="stat-card">
+      <div class="stat-val" id="exp-total">$840</div>
+      <div class="stat-label">This Month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="exp-remaining" style="color:var(--accent)">$896</div>
+      <div class="stat-label">Remaining</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="card-label">Log an expense</div>
+    <div class="form-row">
+      <label class="form-label">Description</label>
+      <input type="text" id="exp-name" placeholder="e.g. Coffee, Gas, Groceries">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Amount ($)</label>
+      <input type="number" id="exp-amount" placeholder="0.00">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Category</label>
+      <select id="exp-cat">
+        <option value="food">Food & Coffee</option>
+        <option value="transport">Transport & Gas</option>
+        <option value="fixed">Fixed Bill</option>
+        <option value="business">Nocturnal Records</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <button class="btn" onclick="addExpense()" style="width:100%">Log Expense</button>
+  </div>
+
+  <div class="section-label">This Month's Log</div>
+  <div class="card" id="expense-list">
+    <div class="empty-state">No expenses logged yet.<br>Start tracking above.</div>
+  </div>
+</div>
+
+<!-- SAVINGS -->
+<div class="page" id="page-savings">
+  <div class="page-header">
+    <div class="page-label">Goals</div>
+    <div class="page-title">SAV<span>INGS</span></div>
+  </div>
+
+  <div class="form-card">
+    <div class="card-label">Update a goal</div>
+    <div class="form-row">
+      <label class="form-label">Goal</label>
+      <select id="goal-select">
+        <option value="er">🛡️ Emergency Fund ($2,520)</option>
+        <option value="cam">📷 Sony A7 IV ($3,000)</option>
+        <option value="nr">🎵 Nocturnal Records ($3,228)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Total saved so far ($)</label>
+      <input type="number" id="goal-amount" placeholder="0.00">
+    </div>
+    <button class="btn" onclick="updateGoal()" style="width:100%">Update Goal</button>
+  </div>
+
+  <div class="section-label">Emergency Fund</div>
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">🛡️ Emergency Fund</div>
+        <div class="goal-meta" id="er-months-label">at $150/mo → 16.8 months</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:800;color:#4ade80" id="er-pct-label">0%</div>
+      </div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="er-bar2" style="width:0%;background:#4ade80"></div>
+    </div>
+    <div class="goal-amounts">
+      <span class="saved" id="er-saved2">$0 saved</span>
+      <span>$2,520 target</span>
+    </div>
+  </div>
+
+  <div class="section-label">Camera Fund</div>
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">📷 Sony A7 IV</div>
+        <div class="goal-meta" id="cam-months-label">at $400/mo → 7.5 months</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:800;color:var(--accent)" id="cam-pct-label">0%</div>
+      </div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="cam-bar2" style="width:0%;background:var(--accent)"></div>
+    </div>
+    <div class="goal-amounts">
+      <span class="saved" id="cam-saved2">$0 saved</span>
+      <span>$3,000 target</span>
+    </div>
+  </div>
+
+  <div class="section-label">Nocturnal Records Fund</div>
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">🎵 Nocturnal Records</div>
+        <div class="goal-meta" id="nr-months-label">at $269/mo → 12 months</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:800;color:var(--accent2)" id="nr-pct-label">0%</div>
+      </div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="nr-bar2" style="width:0%;background:var(--accent2)"></div>
+    </div>
+    <div class="goal-amounts">
+      <span class="saved" id="nr-saved2">$0 invested</span>
+      <span>$3,228 target</span>
+    </div>
+  </div>
+</div>
+
+<!-- VINYL -->
+<div class="page" id="page-vinyl">
+  <div class="page-header">
+    <div class="page-label">Nocturnal Records</div>
+    <div class="page-title">IN<span>VENTORY</span></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="vinyl-count">0</div>
+      <div class="stat-label">Total Records</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="vinyl-value">$0</div>
+      <div class="stat-label">Listed Value</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="vinyl-sold">$0</div>
+      <div class="stat-label">Total Sold</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="card-label">Add to inventory</div>
+    <div class="form-row">
+      <label class="form-label">Artist — Title</label>
+      <input type="text" id="vinyl-title" placeholder="e.g. Pink Floyd — The Wall">
+    </div>
+    <div class="form-row">
+      <label class="form-label">List Price ($)</label>
+      <input type="number" id="vinyl-price" placeholder="0.00">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Cost Paid ($)</label>
+      <input type="number" id="vinyl-cost" placeholder="0.00">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Status</label>
+      <select id="vinyl-status">
+        <option value="listed">Listed on eBay</option>
+        <option value="unlisted">In Hand / Unlisted</option>
+        <option value="sold">Sold</option>
+      </select>
+    </div>
+    <button class="btn" onclick="addVinyl()" style="width:100%">Add Record</button>
+  </div>
+
+  <div class="section-label">Your Records</div>
+  <div class="card" id="vinyl-list">
+    <div class="empty-state">No records yet.<br>Add your first one above.</div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('dashboard',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    DASH
+  </button>
+  <button class="nav-btn" onclick="showPage('expenses',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    SPEND
+  </button>
+  <button class="nav-btn" onclick="showPage('savings',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22V12m0 0l-4 4m4-4l4 4"/><path d="M20 12a8 8 0 10-16 0"/></svg>
+    GOALS
+  </button>
+  <button class="nav-btn" onclick="showPage('vinyl',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 9V3M15 12h6"/></svg>
+    VINYL
+  </button>
+</nav>
+
+<script>
+  let INCOME = 1736;
+  const BASE_EXPENSES = 840;
+
+  // State
+  let state = {
+    income: 1736,
+    goals: { er: 0, cam: 0, nr: 0 },
+    expenses: [],
+    vinyl: []
+  };
+
+  // Load from localStorage
+  function loadState() {
+    try {
+      const saved = localStorage.getItem('nocturnal-state');
+      if (saved) state = JSON.parse(saved);
+      INCOME = state.income || 1736;
+    } catch(e) {}
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem('nocturnal-state', JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  // Navigation
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Toast
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // Format currency
+  function fmt(n) {
+    return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+  }
+
+  // Update dashboard
+  function updateDashboard() {
+    const monthlyExp = getMonthlyExpenses();
+    const totalExp = BASE_EXPENSES + monthlyExp;
+    const surplus = INCOME - totalExp;
+    const pct = Math.round((surplus / INCOME) * 100);
+
+    document.getElementById('income-display').textContent = fmt(INCOME);
+    document.getElementById('dash-income-max').textContent = fmt(INCOME);
+    document.getElementById('dash-surplus').textContent = fmt(Math.max(0, surplus));
+    document.getElementById('dash-expenses').textContent = fmt(totalExp);
+    document.getElementById('dash-bar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+    document.getElementById('dash-pct').textContent = pct + '% surplus';
+
+    // Goals on dashboard
+    updateGoalBar('er', 2520, 'er-bar', 'er-saved');
+    updateGoalBar('cam', 3000, 'cam-bar', 'cam-saved');
+    updateGoalBar('nr', 3228, 'nr-bar', 'nr-saved');
+  }
+
+  // Income editing
+  function toggleIncomeEdit() {
+    const card = document.getElementById('income-display-card');
+    const edit = document.getElementById('income-edit-card');
+    const showing = edit.style.display !== 'none';
+    edit.style.display = showing ? 'none' : 'block';
+    card.style.display = showing ? 'flex' : 'none';
+    if (!showing) document.getElementById('income-input').focus();
+  }
+
+  function updateIncome() {
+    const val = parseFloat(document.getElementById('income-input').value);
+    if (isNaN(val) || val <= 0) { toast('Enter a valid amount'); return; }
+    INCOME = val;
+    state.income = val;
+    saveState();
+    document.getElementById('income-input').value = '';
+    toggleIncomeEdit();
+    updateDashboard();
+    renderExpenses();
+    toast('Income updated ✓');
+  }
+
+  function updateGoalBar(key, target, barId, savedId) {
+    const saved = state.goals[key] || 0;
+    const pct = Math.min((saved / target) * 100, 100);
+    const el = document.getElementById(barId);
+    const sel = document.getElementById(savedId);
+    if (el) el.style.width = pct + '%';
+    if (sel) sel.textContent = fmt(saved) + (key === 'nr' ? ' invested' : ' saved');
+  }
+
+  // Expenses
+  function getMonthlyExpenses() {
+    return state.expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  }
+
+  function addExpense() {
+    const name = document.getElementById('exp-name').value.trim();
+    const amount = parseFloat(document.getElementById('exp-amount').value);
+    const cat = document.getElementById('exp-cat').value;
+    if (!name || isNaN(amount) || amount <= 0) { toast('Fill in all fields'); return; }
+
+    state.expenses.push({ id: Date.now(), name, amount, cat, date: new Date().toLocaleDateString() });
+    saveState();
+    document.getElementById('exp-name').value = '';
+    document.getElementById('exp-amount').value = '';
+    renderExpenses();
+    updateDashboard();
+    toast('Expense logged ✓');
+  }
+
+  function deleteExpense(id) {
+    state.expenses = state.expenses.filter(e => e.id !== id);
+    saveState();
+    renderExpenses();
+    updateDashboard();
+  }
+
+  function renderExpenses() {
+    const list = document.getElementById('expense-list');
+    const monthly = getMonthlyExpenses();
+    const remaining = INCOME - BASE_EXPENSES - monthly;
+
+    document.getElementById('exp-total').textContent = fmt(BASE_EXPENSES + monthly);
+    document.getElementById('exp-remaining').textContent = fmt(Math.max(0, remaining));
+
+    if (state.expenses.length === 0) {
+      list.innerHTML = '<div class="empty-state">No expenses logged yet.<br>Start tracking above.</div>';
+      return;
+    }
+
+    list.innerHTML = state.expenses.slice().reverse().map(e => `
+      <div class="expense-item">
+        <div>
+          <div class="expense-name">${e.name}</div>
+          <div class="expense-tag">${e.cat} · ${e.date}</div>
+        </div>
+        <div class="expense-right">
+          <div class="expense-amt">${fmt(e.amount)}</div>
+          <button class="del-btn" onclick="deleteExpense(${e.id})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Goals
+  function updateGoal() {
+    const key = document.getElementById('goal-select').value;
+    const amount = parseFloat(document.getElementById('goal-amount').value);
+    if (isNaN(amount) || amount < 0) { toast('Enter a valid amount'); return; }
+
+    state.goals[key] = amount;
+    saveState();
+    document.getElementById('goal-amount').value = '';
+    renderGoals();
+    updateDashboard();
+    toast('Goal updated ✓');
+  }
+
+  function renderGoals() {
+    const targets = { er: 2520, cam: 3000, nr: 3228 };
+    const rates = { er: 150, cam: 400, nr: 269 };
+    const labels = { er: 'er', cam: 'cam', nr: 'nr' };
+
+    ['er', 'cam', 'nr'].forEach(key => {
+      const saved = state.goals[key] || 0;
+      const target = targets[key];
+      const pct = Math.min((saved / target) * 100, 100);
+      const remaining = Math.max(0, target - saved);
+      const months = remaining > 0 ? (remaining / rates[key]).toFixed(1) : 0;
+
+      const bar = document.getElementById(key + '-bar2');
+      const savedEl = document.getElementById(key + '-saved2');
+      const pctEl = document.getElementById(key + '-pct-label');
+      const moEl = document.getElementById(key + '-months-label');
+
+      if (bar) bar.style.width = pct + '%';
+      if (savedEl) savedEl.textContent = fmt(saved) + (key === 'nr' ? ' invested' : ' saved');
+      if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+      if (moEl) {
+        if (remaining === 0) {
+          moEl.textContent = '🎉 Goal reached!';
+        } else {
+          moEl.textContent = `at ${fmt(rates[key])}/mo → ${months} months left`;
+        }
+      }
+    });
+  }
+
+  // Vinyl
+  function addVinyl() {
+    const title = document.getElementById('vinyl-title').value.trim();
+    const price = parseFloat(document.getElementById('vinyl-price').value);
+    const cost = parseFloat(document.getElementById('vinyl-cost').value) || 0;
+    const status = document.getElementById('vinyl-status').value;
+
+    if (!title || isNaN(price) || price <= 0) { toast('Fill in title and price'); return; }
+
+    state.vinyl.push({ id: Date.now(), title, price, cost, status });
+    saveState();
+    document.getElementById('vinyl-title').value = '';
+    document.getElementById('vinyl-price').value = '';
+    document.getElementById('vinyl-cost').value = '';
+    renderVinyl();
+    toast('Record added ✓');
+  }
+
+  function deleteVinyl(id) {
+    state.vinyl = state.vinyl.filter(v => v.id !== id);
+    saveState();
+    renderVinyl();
+  }
+
+  function markSold(id) {
+    const v = state.vinyl.find(v => v.id === id);
+    if (v) { v.status = 'sold'; saveState(); renderVinyl(); toast('Marked as sold ✓'); }
+  }
+
+  function renderVinyl() {
+    const list = document.getElementById('vinyl-list');
+    const count = state.vinyl.length;
+    const listedVal = state.vinyl.filter(v => v.status === 'listed').reduce((s, v) => s + v.price, 0);
+    const soldVal = state.vinyl.filter(v => v.status === 'sold').reduce((s, v) => s + v.price, 0);
+
+    document.getElementById('vinyl-count').textContent = count;
+    document.getElementById('vinyl-value').textContent = fmt(listedVal);
+    document.getElementById('vinyl-sold').textContent = fmt(soldVal);
+
+    if (count === 0) {
+      list.innerHTML = '<div class="empty-state">No records yet.<br>Add your first one above.</div>';
+      return;
+    }
+
+    list.innerHTML = state.vinyl.slice().reverse().map(v => `
+      <div class="vinyl-item">
+        <div>
+          <div class="vinyl-title">${v.title}</div>
+          <div class="vinyl-meta">cost: ${fmt(v.cost)} · margin: ${fmt(v.price - v.cost)}</div>
+          ${v.status !== 'sold' ? `<button onclick="markSold(${v.id})" style="background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;padding:3px 0;">mark sold</button>` : ''}
+        </div>
+        <div class="vinyl-right">
+          <div class="vinyl-price">${fmt(v.price)}</div>
+          <div><span class="vinyl-status ${v.status}">${v.status}</span></div>
+          <button class="del-btn" onclick="deleteVinyl(${v.id})" style="display:block;margin-top:4px;text-align:right">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Init
+  loadState();
+  updateDashboard();
+  renderExpenses();
+  renderGoals();
+  renderVinyl();
+</script>
+</body>
+</html>
