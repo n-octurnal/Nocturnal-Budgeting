@@ -199,33 +199,84 @@
   <div id="dash-goals-list"></div>
 </div>
 
-<!-- SPEND -->
-<div class="page" id="page-expenses">
-  <div class="page-label">Track</div>
+<!-- WEEKLY -->
+<div class="page" id="page-weekly">
+  <div class="page-label">This Week</div>
   <div class="page-title-row">
-    <div class="page-title">EX<span>PENSES</span></div>
-    <div class="month-badge" id="exp-month-badge"></div>
+    <div class="page-title">WEEK<span>LY</span></div>
+    <div class="month-badge" id="week-badge"></div>
   </div>
+
+  <!-- Weekly income + split -->
+  <div class="income-card" style="cursor:default;">
+    <div>
+      <div class="card-label">Weekly Take-Home</div>
+      <div class="big" id="weekly-income-display" style="cursor:pointer;">$401</div>
+      <div class="small" id="weekly-override-note">÷ 4.33 · tap to adjust</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="card-label">Week</div>
+      <div style="font-size:16px;font-weight:700;" id="week-num">W1</div>
+      <div class="small" id="week-range"></div>
+    </div>
+  </div>
+
   <div class="split-row">
-    <div class="stat-card"><div class="stat-val" id="exp-total">$0</div><div class="stat-label">Total Spent</div></div>
-    <div class="stat-card"><div class="stat-val" id="exp-remaining" style="color:var(--accent)">$0</div><div class="stat-label">Remaining</div></div>
+    <div class="split-card green"><div class="card-label">Surplus</div><div class="val" id="weekly-surplus">$0</div></div>
+    <div class="split-card orange"><div class="card-label">Spent</div><div class="val" id="weekly-spent">$0</div></div>
   </div>
+
+  <div class="dual-bar-wrap">
+    <div class="card-label">Weekly Budget</div>
+    <div class="dual-bar-track">
+      <div class="dual-bar-sur" id="w-dual-sur" style="width:0%"></div>
+      <div class="dual-bar-exp" id="w-dual-exp" style="width:0%"></div>
+    </div>
+    <div class="dual-bar-labels">
+      <span style="color:var(--accent);" id="w-sur-lbl">Left $0</span>
+      <span style="color:var(--muted);" id="w-mid-lbl">of $0</span>
+      <span style="color:var(--accent2);" id="w-exp-lbl">Spent $0</span>
+    </div>
+  </div>
+
+  <!-- Bills due this week -->
+  <div class="section-row">
+    <div class="section-label">Bills This Week</div>
+  </div>
+  <div id="weekly-bills"></div>
+
+  <!-- Weekly allocations -->
+  <div class="section-row">
+    <div class="section-label">Weekly Allocations</div>
+  </div>
+  <div id="weekly-alloc-grid" class="alloc-grid"></div>
+
+  <!-- Quick log -->
+  <div class="section-row"><div class="section-label">Quick Log</div></div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input type="number" id="quick-amount" placeholder="$ amount" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'Space Mono',monospace;font-size:14px;outline:none;">
+    <button class="btn" onclick="quickLog()" style="padding:12px 20px;font-size:14px;">+ Misc</button>
+  </div>
+
+  <!-- Log expense -->
+  <div class="section-row"><div class="section-label">Log Expense</div></div>
   <div class="form-card">
-    <div class="card-label" style="color:var(--accent)">Log Expense</div>
-    <div class="form-row" style="margin-top:8px;"><label class="form-label">Description</label><input type="text" id="exp-name" placeholder="e.g. Coffee, Gas..."></div>
-    <div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="exp-amount" placeholder="0.00"></div>
+    <div class="form-row"><label class="form-label">Description</label><input type="text" id="wexp-name" placeholder="e.g. Coffee, Gas..."></div>
+    <div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="wexp-amount" placeholder="0.00"></div>
     <div class="form-row"><label class="form-label">Category</label>
-      <select id="exp-cat">
+      <select id="wexp-cat">
         <option value="food">Food & Coffee</option>
         <option value="transport">Transport & Gas</option>
         <option value="business">Nocturnal Records</option>
         <option value="other">Other</option>
       </select>
     </div>
-    <button class="btn" onclick="addExpense()" style="width:100%;margin-top:4px;">Log Expense</button>
+    <button class="btn" onclick="addWeeklyExpense()" style="width:100%;margin-top:4px;">Log Expense</button>
   </div>
-  <div class="section-label" style="margin-bottom:10px;">This Month</div>
-  <div class="card" id="expense-list"><div class="empty-state">No expenses yet.</div></div>
+
+  <!-- Weekly expense list -->
+  <div class="section-label" style="margin-bottom:10px;">This Week's Expenses</div>
+  <div class="card" id="weekly-expense-list"><div class="empty-state">No expenses this week.</div></div>
 </div>
 
 <!-- GOALS -->
@@ -234,7 +285,7 @@
   <div class="page-title-row">
     <div class="page-title">SAV<span>INGS</span></div>
   </div>
-  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">Goals never reset — they track progress until you hit each target 🎯</div>
+  <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">Goals never reset — they track progress until you hit each target 🎯</div>
   <div class="section-row">
     <div class="section-label">Your Goals</div>
     <button class="section-btn" id="goals-reorder-btn" onclick="toggleReorder('goals')">REORDER</button>
@@ -243,45 +294,15 @@
   <button class="btn secondary" onclick="openForm('goal',null)" style="width:100%;margin-top:10px;font-size:12px;">+ Add Goal</button>
 </div>
 
-<!-- VINYL -->
-<div class="page" id="page-vinyl">
-  <div class="page-label">Nocturnal Records</div>
-  <div class="page-title" style="margin-bottom:20px;">IN<span style="color:var(--accent)">VENTORY</span></div>
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-val" id="vinyl-count">0</div><div class="stat-label">Records</div></div>
-    <div class="stat-card"><div class="stat-val" id="vinyl-value">$0</div><div class="stat-label">Listed</div></div>
-    <div class="stat-card"><div class="stat-val" id="vinyl-sold">$0</div><div class="stat-label">Sold</div></div>
-  </div>
-  <div class="form-card">
-    <div class="card-label" style="color:var(--accent)">Add Record</div>
-    <div class="form-row" style="margin-top:8px;"><label class="form-label">Artist — Title</label><input type="text" id="vinyl-title" placeholder="e.g. Pink Floyd — The Wall"></div>
-    <div class="form-row"><label class="form-label">List Price ($)</label><input type="number" id="vinyl-price" placeholder="0.00"></div>
-    <div class="form-row"><label class="form-label">Cost Paid ($)</label><input type="number" id="vinyl-cost" placeholder="0.00"></div>
-    <div class="form-row"><label class="form-label">Status</label>
-      <select id="vinyl-status">
-        <option value="listed">Listed on eBay</option>
-        <option value="unlisted">In Hand / Unlisted</option>
-        <option value="sold">Sold</option>
-      </select>
-    </div>
-    <button class="btn" onclick="addVinyl()" style="width:100%;margin-top:4px;">Add Record</button>
-  </div>
-  <div class="section-label" style="margin-bottom:10px;">Your Records</div>
-  <div class="card" id="vinyl-list"><div class="empty-state">No records yet.</div></div>
-</div>
-
 <nav class="nav">
   <button class="nav-btn active" onclick="showPage('dashboard',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>DASH
   </button>
-  <button class="nav-btn" onclick="showPage('expenses',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>SPEND
+  <button class="nav-btn" onclick="showPage('weekly',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>WEEKLY
   </button>
   <button class="nav-btn" onclick="showPage('savings',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22V12m0 0l-4 4m4-4l4 4"/><path d="M20 12a8 8 0 10-16 0"/></svg>GOALS
-  </button>
-  <button class="nav-btn" onclick="showPage('vinyl',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 9V3M15 12h6"/></svg>VINYL
   </button>
 </nav>
 
@@ -310,531 +331,718 @@
 </div>
 
 <script>
-// ── STATE ────────────────────────────────────────────────────────────
+// STATE
 let INCOME = 1736;
 
 function currentMonth() {
-  const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 function monthLabel() {
-  return new Date().toLocaleString('default',{month:'short',year:'numeric'}).toUpperCase();
+  return new Date().toLocaleString('default', {month:'short', year:'numeric'}).toUpperCase();
 }
 
-const DEF_ALLOCS = [
-  {id:1,emoji:'🎵',name:'Nocturnal Records',amount:269,committed:0,done:false},
-  {id:2,emoji:'📷',name:'Camera Fund',amount:400,committed:0,done:false},
-  {id:3,emoji:'🛡️',name:'Emergency',amount:150,committed:0,done:false},
-  {id:4,emoji:'💳',name:'Parents',amount:170,committed:0,done:false}
+var DEF_ALLOCS = [
+  {id:1, emoji:'🎵', name:'Nocturnal Records', amount:269, committed:0, done:false, weeklyCommitted:0},
+  {id:2, emoji:'📷', name:'Camera Fund', amount:400, committed:0, done:false, weeklyCommitted:0},
+  {id:3, emoji:'🛡️', name:'Emergency', amount:150, committed:0, done:false, weeklyCommitted:0},
+  {id:4, emoji:'💳', name:'Parents', amount:170, committed:0, done:false, weeklyCommitted:0}
 ];
-const DEF_BILLS = [
-  {id:10,emoji:'📱',name:'Phone',amount:200,committed:0,done:false},
-  {id:11,emoji:'🏠',name:'Rent',amount:200,committed:0,done:false},
-  {id:12,emoji:'📺',name:'Subscriptions',amount:30,committed:0,done:false},
-  {id:13,emoji:'⛽',name:'Gas',amount:80,committed:0,done:false}
+var DEF_BILLS = [
+  {id:10, emoji:'📱', name:'Phone', amount:200, committed:0, done:false, dueDay:1},
+  {id:11, emoji:'🏠', name:'Rent', amount:200, committed:0, done:false, dueDay:1},
+  {id:12, emoji:'📺', name:'Subscriptions', amount:30, committed:0, done:false, dueDay:null},
+  {id:13, emoji:'⛽', name:'Gas', amount:80, committed:0, done:false, dueDay:null}
 ];
-const DEF_GOALS = [
-  {id:20,emoji:'🛡️',name:'Emergency Fund',target:2520,saved:0,color:'#4ade80',meta:'3 months expenses'},
-  {id:21,emoji:'📷',name:'Sony A7 IV',target:3000,saved:0,color:'#c8ff00',meta:'full setup · brand asset'},
-  {id:22,emoji:'🎵',name:'Nocturnal Records',target:3228,saved:0,color:'#ff6b35',meta:'annual inventory fund'}
+var DEF_GOALS = [
+  {id:20, emoji:'🛡️', name:'Emergency Fund', target:2520, saved:0, color:'#4ade80', meta:'3 months expenses'},
+  {id:21, emoji:'📷', name:'Sony A7 IV', target:3000, saved:0, color:'#c8ff00', meta:'full setup · brand asset'},
+  {id:22, emoji:'🎵', name:'Nocturnal Records', target:3228, saved:0, color:'#ff6b35', meta:'annual inventory fund'}
 ];
 
-let state = {
-  income:1736, expenseMonth:currentMonth(), expenses:[], expenseHistory:[],
-  allocations:JSON.parse(JSON.stringify(DEF_ALLOCS)),
-  bills:JSON.parse(JSON.stringify(DEF_BILLS)),
-  goals:JSON.parse(JSON.stringify(DEF_GOALS))
+var state = {
+  income: 1736,
+  weeklyIncomeOverride: null,
+  expenseMonth: null,
+  expenses: [],
+  expenseHistory: [],
+  weeklyExpenses: [],
+  currentWeek: null,
+  allocations: null,
+  bills: null,
+  goals: null
 };
+
+function cloneDefaults() {
+  state.allocations = JSON.parse(JSON.stringify(DEF_ALLOCS));
+  state.bills = JSON.parse(JSON.stringify(DEF_BILLS));
+  state.goals = JSON.parse(JSON.stringify(DEF_GOALS));
+  state.expenseMonth = currentMonth();
+  state.currentWeek = currentWeek();
+}
 
 function loadState() {
   try {
-    const s = localStorage.getItem('nocturnal-v4');
+    var s = localStorage.getItem('nocturnal-v5');
     if (s) {
-      const p = JSON.parse(s);
-      state = {...state,...p};
-      if (!state.allocations?.length) state.allocations = JSON.parse(JSON.stringify(DEF_ALLOCS));
-      if (!state.bills?.length) state.bills = JSON.parse(JSON.stringify(DEF_BILLS));
-      if (!state.goals?.length) state.goals = JSON.parse(JSON.stringify(DEF_GOALS));
-      state.allocations = state.allocations.map(a=>({committed:0,done:false,...a}));
-      state.bills = state.bills.map(b=>({committed:0,done:false,...b}));
-      state.goals = state.goals.map(g=>({color:'#c8ff00',meta:'',...g}));
-      // Monthly auto-reset
-      if (!state.expenseMonth) state.expenseMonth = currentMonth();
+      var p = JSON.parse(s);
+      // Merge saved state
+      state.income = p.income || 1736;
+      state.weeklyIncomeOverride = p.weeklyIncomeOverride || null;
+      state.expenseMonth = p.expenseMonth || currentMonth();
+      state.expenses = p.expenses || [];
+      state.expenseHistory = p.expenseHistory || [];
+      state.weeklyExpenses = p.weeklyExpenses || [];
+      state.currentWeek = p.currentWeek || currentWeek();
+      state.allocations = p.allocations && p.allocations.length ? p.allocations : JSON.parse(JSON.stringify(DEF_ALLOCS));
+      state.bills = p.bills && p.bills.length ? p.bills : JSON.parse(JSON.stringify(DEF_BILLS));
+      state.goals = p.goals && p.goals.length ? p.goals : JSON.parse(JSON.stringify(DEF_GOALS));
+      // Migrate missing fields
+      state.allocations = state.allocations.map(function(a) { return Object.assign({committed:0, done:false, weeklyCommitted:0}, a); });
+      state.bills = state.bills.map(function(b) { return Object.assign({committed:0, done:false, dueDay:null}, b); });
+      state.goals = state.goals.map(function(g) { return Object.assign({color:'#c8ff00', meta:''}, g); });
+      // Monthly reset
       if (state.expenseMonth !== currentMonth()) {
-        if (state.expenses?.length) {
-          if (!state.expenseHistory) state.expenseHistory=[];
-          state.expenseHistory.unshift({month:state.expenseMonth,expenses:state.expenses});
-          if (state.expenseHistory.length>6) state.expenseHistory=state.expenseHistory.slice(0,6);
+        if (state.expenses.length) {
+          state.expenseHistory.unshift({month: state.expenseMonth, expenses: state.expenses});
+          if (state.expenseHistory.length > 6) state.expenseHistory = state.expenseHistory.slice(0, 6);
         }
-        state.expenses=[];
-        state.expenseMonth=currentMonth();
-        state.allocations=state.allocations.map(a=>({...a,committed:0,done:false}));
-        state.bills=state.bills.map(b=>({...b,committed:0,done:false}));
-        saveState(); toast('New month — reset ✓');
+        state.expenses = [];
+        state.expenseMonth = currentMonth();
+        state.allocations = state.allocations.map(function(a) { return Object.assign({}, a, {committed:0, done:false}); });
+        state.bills = state.bills.map(function(b) { return Object.assign({}, b, {done:false}); });
+        saveState();
+        toast('New month — reset');
       }
+      // Weekly reset
+      if (state.currentWeek !== currentWeek()) {
+        state.weeklyExpenses = [];
+        state.currentWeek = currentWeek();
+        state.weeklyIncomeOverride = null;
+        state.allocations = state.allocations.map(function(a) { return Object.assign({}, a, {weeklyCommitted:0}); });
+        saveState();
+      }
+    } else {
+      cloneDefaults();
     }
-    INCOME = state.income||1736;
-  } catch(e){console.error(e);}
+    INCOME = state.income;
+  } catch(e) {
+    console.error('loadState error:', e);
+    cloneDefaults();
+  }
 }
 
 function saveState() {
-  try { localStorage.setItem('nocturnal-v4',JSON.stringify(state)); } catch(e){}
+  try { localStorage.setItem('nocturnal-v5', JSON.stringify(state)); } catch(e) {}
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────
-function fmt(n) { return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
-function toast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+// UTILS
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
 }
-function showPage(id,btn) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
 }
 
-// ── INCOME ────────────────────────────────────────────────────────────
+// INCOME
 function toggleIncomeEdit() {
-  const c=document.getElementById('income-display-card'),e=document.getElementById('income-edit-card');
-  const open=e.style.display!=='none';
-  e.style.display=open?'none':'block'; c.style.display=open?'flex':'none';
-  if(!open) document.getElementById('income-input').focus();
+  var c = document.getElementById('income-display-card');
+  var e = document.getElementById('income-edit-card');
+  var open = e.style.display !== 'none';
+  e.style.display = open ? 'none' : 'block';
+  c.style.display = open ? 'flex' : 'none';
+  if (!open) document.getElementById('income-input').focus();
 }
 function updateIncome() {
-  const v=parseFloat(document.getElementById('income-input').value);
-  if(isNaN(v)||v<=0){toast('Enter a valid amount');return;}
-  INCOME=v; state.income=v; saveState();
-  document.getElementById('income-input').value='';
-  toggleIncomeEdit(); renderAll(); toast('Income updated ✓');
+  var v = parseFloat(document.getElementById('income-input').value);
+  if (isNaN(v) || v <= 0) { toast('Enter a valid amount'); return; }
+  INCOME = v; state.income = v; saveState();
+  document.getElementById('income-input').value = '';
+  toggleIncomeEdit(); renderAll(); toast('Income updated');
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────
-function getFixedTotal() { return (state.bills||[]).reduce((s,b)=>s+b.amount,0); }
-function getVarTotal() { return (state.expenses||[]).reduce((s,e)=>s+parseFloat(e.amount||0),0); }
-function getAllocCommitted() { return (state.allocations||[]).reduce((s,a)=>s+(a.committed||0),0); }
-function getTotalSpent() { return getFixedTotal()+getVarTotal()+getAllocCommitted(); }
+// WEEKLY INCOME OVERRIDE
+function getWeeklyIncome() {
+  return state.weeklyIncomeOverride || Math.round(INCOME / 4.33);
+}
+function setWeeklyOverride() {
+  formCtx = {type:'weekly_income'};
+  document.getElementById('form-title').textContent = "This Week's Income";
+  var def = Math.round(INCOME / 4.33);
+  document.getElementById('form-body').innerHTML =
+    '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">Override for this week only. Resets Monday.<br>Default: ' + fmt(def) + '/week</div>' +
+    '<div class="form-row"><label class="form-label">Actual Take-Home This Week ($)</label>' +
+    '<input type="number" id="fm-amount" placeholder="' + def + '" value="' + (state.weeklyIncomeOverride || def) + '"></div>' +
+    (state.weeklyIncomeOverride ? '<button class="btn secondary" onclick="clearWeeklyOverride()" style="width:100%;margin-top:8px;">Reset to Default (' + fmt(def) + ')</button>' : '');
+  document.getElementById('form-modal').style.display = 'flex';
+  setTimeout(function() { var el = document.getElementById('fm-amount'); if(el) el.focus(); }, 100);
+}
+function clearWeeklyOverride() {
+  state.weeklyIncomeOverride = null; saveState(); closeForm(); renderWeekly(); toast('Reset to default');
+}
 
+// WEEK HELPERS
+function currentWeek() {
+  var d = new Date();
+  var jan1 = new Date(d.getFullYear(), 0, 1);
+  return d.getFullYear() + '-W' + String(Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7)).padStart(2, '0');
+}
+function getWeekBounds() {
+  var d = new Date();
+  var day = d.getDay();
+  var mon = new Date(d); mon.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  var sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  function fmtD(x) { return x.toLocaleDateString('default', {month:'short', day:'numeric'}); }
+  return { mon: mon, sun: sun, label: fmtD(mon) + ' – ' + fmtD(sun) };
+}
+function getWeekNumber() {
+  var d = new Date();
+  var jan1 = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+}
+
+// BILL HELPERS
+function daySuffix(d) {
+  if (d >= 11 && d <= 13) return 'th';
+  return ['th','st','nd','rd','th'][Math.min(d % 10, 4)];
+}
+function billUrgency(b) {
+  if (b.done) return 'paid';
+  if (!b.dueDay) return 'none';
+  var today = new Date().getDate();
+  var diff = b.dueDay - today;
+  if (diff < 0) return 'overdue';
+  if (diff <= 3) return 'urgent';
+  if (diff <= 7) return 'soon';
+  return 'none';
+}
+function urgencyColor(u) {
+  if (u === 'paid') return 'var(--accent)';
+  if (u === 'overdue') return 'var(--danger)';
+  if (u === 'urgent') return '#ff9500';
+  if (u === 'soon') return '#ffd60a';
+  return 'var(--muted)';
+}
+function urgencyLabel(b) {
+  if (b.done) return 'paid';
+  if (!b.dueDay) return 'tap to mark paid';
+  var today = new Date().getDate();
+  var diff = b.dueDay - today;
+  if (diff < 0) return 'overdue (was ' + b.dueDay + daySuffix(b.dueDay) + ')';
+  if (diff === 0) return 'due today!';
+  if (diff === 1) return 'due tomorrow';
+  return 'due ' + b.dueDay + daySuffix(b.dueDay);
+}
+function isBillDueThisWeek(b) {
+  if (!b.dueDay) return true;
+  var bounds = getWeekBounds();
+  var mon = bounds.mon.getDate(), sun = bounds.sun.getDate();
+  var monM = bounds.mon.getMonth(), sunM = bounds.sun.getMonth();
+  if (monM === sunM) return b.dueDay >= mon && b.dueDay <= sun;
+  return b.dueDay >= mon || b.dueDay <= sun;
+}
+
+// TOTALS
+function getFixedTotal() { return state.bills.reduce(function(s,b) { return s + b.amount; }, 0); }
+function getVarTotal() { return state.weeklyExpenses.reduce(function(s,e) { return s + parseFloat(e.amount || 0); }, 0); }
+function getAllocCommitted() { return state.allocations.reduce(function(s,a) { return s + (a.committed || 0); }, 0); }
+function getTotalSpent() { return getFixedTotal() + getVarTotal() + getAllocCommitted(); }
+function getWeeklyExpTotal() { return state.weeklyExpenses.reduce(function(s,e) { return s + parseFloat(e.amount || 0); }, 0); }
+function getWeeklyAllocCommitted() { return state.allocations.reduce(function(s,a) { return s + (a.weeklyCommitted || 0); }, 0); }
+function getWeeklySpent() { return getWeeklyExpTotal() + getWeeklyAllocCommitted(); }
+
+// DASHBOARD
 function renderDashboard() {
-  const ml=monthLabel(); // e.g. "MAR 2026"
-  const parts=ml.split(' ');
-  const splitHtml=`<span style="color:var(--text);">${parts[0]}</span><span style="color:var(--accent);"> ${parts[1]||''}</span>`;
-  const hm=document.getElementById('header-month'); if(hm) hm.innerHTML=splitHtml;
-  const em=document.getElementById('exp-month-badge'); if(em) em.innerHTML=splitHtml;
-  document.getElementById('income-display').textContent=fmt(INCOME);
+  var ml = monthLabel();
+  var parts = ml.split(' ');
+  var splitHtml = '<span style="color:var(--text);">' + parts[0] + '</span><span style="color:var(--accent);"> ' + (parts[1] || '') + '</span>';
+  var hm = document.getElementById('header-month'); if (hm) hm.innerHTML = splitHtml;
+  var em = document.getElementById('exp-month-badge'); if (em) em.innerHTML = splitHtml;
+  document.getElementById('income-display').textContent = fmt(INCOME);
 
-  const spent=getTotalSpent(), surplus=Math.max(0,INCOME-spent);
-  const expPct=Math.min((spent/INCOME)*100,100), surPct=Math.min((surplus/INCOME)*100,100);
-
-  document.getElementById('dash-surplus').textContent=fmt(surplus);
-  document.getElementById('dash-expenses').textContent=fmt(spent);
-  document.getElementById('dual-sur').style.width=surPct+'%';
-  document.getElementById('dual-exp').style.width=expPct+'%';
-  document.getElementById('dual-sur-lbl').textContent='Left '+fmt(surplus);
-  document.getElementById('dual-mid-lbl').textContent='of '+fmt(INCOME);
-  document.getElementById('dual-exp-lbl').textContent='Spent '+fmt(spent);
-
+  var spent = getTotalSpent(), surplus = Math.max(0, INCOME - spent);
+  var expPct = Math.min((spent / INCOME) * 100, 100), surPct = Math.min((surplus / INCOME) * 100, 100);
+  document.getElementById('dash-surplus').textContent = fmt(surplus);
+  document.getElementById('dash-expenses').textContent = fmt(spent);
+  document.getElementById('dual-sur').style.width = surPct + '%';
+  document.getElementById('dual-exp').style.width = expPct + '%';
+  document.getElementById('dual-sur-lbl').textContent = 'Left ' + fmt(surplus);
+  document.getElementById('dual-mid-lbl').textContent = 'of ' + fmt(INCOME);
+  document.getElementById('dual-exp-lbl').textContent = 'Spent ' + fmt(spent);
   renderAlloc(); renderBills(); renderDashGoals();
 }
 
-// ── REORDER ───────────────────────────────────────────────────────────
-const reorderMode={alloc:false,bills:false,goals:false};
+// REORDER
+var reorderMode = {alloc:false, bills:false, goals:false};
 function toggleReorder(type) {
-  reorderMode[type]=!reorderMode[type];
-  const btn=document.getElementById(type+'-reorder-btn')||document.getElementById('goals-reorder-btn');
-  if(btn) btn.classList.toggle('active',reorderMode[type]);
-  if(type==='alloc') renderAlloc();
-  else if(type==='bills') renderBills();
-  else if(type==='goals') renderGoals();
-  if(reorderMode[type]) toast('Use arrows to reorder');
+  reorderMode[type] = !reorderMode[type];
+  var btn = document.getElementById(type + '-reorder-btn') || document.getElementById('goals-reorder-btn');
+  if (btn) btn.classList.toggle('active', reorderMode[type]);
+  if (type === 'alloc') renderAlloc();
+  else if (type === 'bills') renderBills();
+  else if (type === 'goals') renderGoals();
+  if (reorderMode[type]) toast('Use arrows to reorder');
 }
-function moveItem(arr,id,dir) {
-  const i=arr.findIndex(a=>a.id===id); if(i<0) return arr;
-  const n=i+dir; if(n<0||n>=arr.length) return arr;
-  const c=[...arr]; [c[i],c[n]]=[c[n],c[i]]; return c;
+function moveItem(arr, id, dir) {
+  var i = arr.findIndex(function(a) { return a.id === id; });
+  if (i < 0) return arr;
+  var n = i + dir;
+  if (n < 0 || n >= arr.length) return arr;
+  var c = arr.slice();
+  var tmp = c[i]; c[i] = c[n]; c[n] = tmp;
+  return c;
 }
-function reorderAlloc(id,dir){state.allocations=moveItem(state.allocations,id,dir);saveState();renderAlloc();}
-function reorderBills(id,dir){state.bills=moveItem(state.bills,id,dir);saveState();renderBills();}
-function reorderGoals(id,dir){state.goals=moveItem(state.goals,id,dir);saveState();renderGoals();}
+function reorderAlloc(id, dir) { state.allocations = moveItem(state.allocations, id, dir); saveState(); renderAlloc(); }
+function reorderBills(id, dir) { state.bills = moveItem(state.bills, id, dir); saveState(); renderBills(); }
+function reorderGoals(id, dir) { state.goals = moveItem(state.goals, id, dir); saveState(); renderGoals(); }
 
-// ── FORM MODAL ────────────────────────────────────────────────────────
-let formCtx=null;
+// FORM MODAL
+var formCtx = null;
+function openForm(type, id) {
+  formCtx = {type: type, id: id};
+  var titleEl = document.getElementById('form-title');
+  var body = document.getElementById('form-body');
 
-function openForm(type,id) {
-  formCtx={type,id};
-  const modal=document.getElementById('form-modal');
-  const titleEl=document.getElementById('form-title');
-  const body=document.getElementById('form-body');
-
-  if(type==='alloc'||type==='bills') {
-    const arr=type==='alloc'?state.allocations:state.bills;
-    const item=id?arr.find(a=>a.id===id):null;
-    titleEl.textContent=item?`Edit ${type==='alloc'?'Allocation':'Bill'}`:`New ${type==='alloc'?'Allocation':'Fixed Bill'}`;
-    body.innerHTML=`
-      <div class="form-row"><label class="form-label">Emoji</label><input type="text" id="fm-emoji" placeholder="💰" maxlength="2" value="${item?.emoji||''}"></div>
-      <div class="form-row"><label class="form-label">Name</label><input type="text" id="fm-name" placeholder="e.g. Savings" value="${item?.name||''}"></div>
-      <div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="${item?.amount||''}"></div>`;
+  if (type === 'alloc' || type === 'bills') {
+    var arr = type === 'alloc' ? state.allocations : state.bills;
+    var item = id ? arr.find(function(a) { return a.id === id; }) : null;
+    titleEl.textContent = item ? ('Edit ' + (type === 'alloc' ? 'Allocation' : 'Bill')) : ('New ' + (type === 'alloc' ? 'Allocation' : 'Fixed Bill'));
+    body.innerHTML =
+      '<div class="form-row"><label class="form-label">Emoji</label><input type="text" id="fm-emoji" placeholder="💰" maxlength="2" value="' + (item ? item.emoji : '') + '"></div>' +
+      '<div class="form-row"><label class="form-label">Name</label><input type="text" id="fm-name" placeholder="e.g. Savings" value="' + (item ? item.name : '') + '"></div>' +
+      '<div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="' + (item ? item.amount : '') + '"></div>' +
+      (type === 'bills' ? '<div class="form-row"><label class="form-label">Due Day of Month (optional)</label><input type="number" id="fm-dueday" placeholder="e.g. 15" min="1" max="31" value="' + (item && item.dueDay ? item.dueDay : '') + '"></div>' : '');
+  } else if (type === 'goal') {
+    var item = id ? state.goals.find(function(g) { return g.id === id; }) : null;
+    titleEl.textContent = item ? 'Edit Goal' : 'New Goal';
+    body.innerHTML =
+      '<div class="form-row"><label class="form-label">Emoji</label><input type="text" id="fm-emoji" placeholder="🎯" maxlength="2" value="' + (item ? item.emoji : '') + '"></div>' +
+      '<div class="form-row"><label class="form-label">Goal Name</label><input type="text" id="fm-name" placeholder="e.g. Emergency Fund" value="' + (item ? item.name : '') + '"></div>' +
+      '<div class="form-row"><label class="form-label">Target Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="' + (item ? item.target : '') + '"></div>' +
+      '<div class="form-row"><label class="form-label">Note (optional)</label><input type="text" id="fm-meta" placeholder="e.g. 3 months expenses" value="' + (item ? item.meta : '') + '"></div>' +
+      (item ? '<div class="form-row"><label class="form-label">Amount Saved So Far ($)</label><input type="number" id="fm-saved" placeholder="0" value="' + (item.saved || 0) + '"></div>' : '');
+  } else if (type === 'goal_update') {
+    var item = state.goals.find(function(g) { return g.id === id; });
+    titleEl.textContent = 'Update ' + (item ? item.emoji + ' ' + item.name : 'Goal');
+    body.innerHTML =
+      '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">Enter your total saved so far</div>' +
+      '<div class="form-row"><label class="form-label">Total Saved ($)</label><input type="number" id="fm-amount" placeholder="0" value="' + (item ? item.saved || 0 : 0) + '"></div>';
   }
-  else if(type==='commit') {
-    const {subtype,realid}=formCtx;
-    const arr=subtype==='alloc'?state.allocations:state.bills;
-    const item=arr.find(a=>a.id===realid);
-    titleEl.textContent=`${item?.emoji||''} ${item?.name||''} — Log Progress`;
-    body.innerHTML=`
-      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">How much have you committed this month?</div>
-      <div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="${item?.committed||0}"></div>`;
-  }
-  else if(type==='goal') {
-    const item=id?state.goals.find(g=>g.id===id):null;
-    titleEl.textContent=item?'Edit Goal':'New Goal';
-    body.innerHTML=`
-      <div class="form-row"><label class="form-label">Emoji</label><input type="text" id="fm-emoji" placeholder="🎯" maxlength="2" value="${item?.emoji||''}"></div>
-      <div class="form-row"><label class="form-label">Goal Name</label><input type="text" id="fm-name" placeholder="e.g. Emergency Fund" value="${item?.name||''}"></div>
-      <div class="form-row"><label class="form-label">Target Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="${item?.target||''}"></div>
-      <div class="form-row"><label class="form-label">Note (optional)</label><input type="text" id="fm-meta" placeholder="e.g. 3 months expenses" value="${item?.meta||''}"></div>
-      ${item?`<div class="form-row"><label class="form-label">Amount Saved So Far ($)</label><input type="number" id="fm-saved" placeholder="0" value="${item.saved||0}"></div>`:''}`;
-  }
-  else if(type==='goal_update') {
-    const item=state.goals.find(g=>g.id===id);
-    titleEl.textContent=`Update ${item?.emoji||''} ${item?.name||''}`;
-    body.innerHTML=`
-      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">Enter your total saved so far</div>
-      <div class="form-row"><label class="form-label">Total Saved ($)</label><input type="number" id="fm-amount" placeholder="0" value="${item?.saved||0}"></div>`;
-  }
-
-  modal.style.display='flex';
-  setTimeout(()=>{ const f=document.getElementById('fm-name')||document.getElementById('fm-amount'); if(f)f.focus(); },100);
+  document.getElementById('form-modal').style.display = 'flex';
+  setTimeout(function() {
+    var f = document.getElementById('fm-name') || document.getElementById('fm-amount');
+    if (f) f.focus();
+  }, 100);
 }
 
-function openCommit(subtype,realid) {
-  formCtx={type:'commit',subtype,realid};
-  const arr=subtype==='alloc'?state.allocations:state.bills;
-  const item=arr.find(a=>a.id===realid);
-  document.getElementById('form-title').textContent=`${item?.emoji||''} ${item?.name||''} — Log Progress`;
-  document.getElementById('form-body').innerHTML=`
-    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">How much have you ${subtype==='bills'?'paid':'committed'} this month?</div>
-    <div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="${item?.committed||0}"></div>`;
-  document.getElementById('form-modal').style.display='flex';
-  setTimeout(()=>document.getElementById('fm-amount').focus(),100);
+function openCommit(subtype, realid) {
+  var arr = subtype === 'alloc' ? state.allocations : state.bills;
+  var item = arr.find(function(a) { return a.id === realid; });
+  formCtx = {type:'commit', subtype:subtype, realid:realid};
+  document.getElementById('form-title').textContent = (item ? item.emoji + ' ' + item.name : '') + ' — Log Progress';
+  document.getElementById('form-body').innerHTML =
+    '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">How much have you ' + (subtype === 'bills' ? 'paid' : 'committed') + ' this month?</div>' +
+    '<div class="form-row"><label class="form-label">Amount ($)</label><input type="number" id="fm-amount" placeholder="0" value="' + (item ? item.committed || 0 : 0) + '"></div>';
+  document.getElementById('form-modal').style.display = 'flex';
+  setTimeout(function() { var el = document.getElementById('fm-amount'); if(el) el.focus(); }, 100);
+}
+
+function logWeeklyAlloc(id, weeklyTarget) {
+  var a = state.allocations.find(function(x) { return x.id === id; });
+  formCtx = {type:'weekly_alloc', id:id, weeklyTarget:weeklyTarget};
+  document.getElementById('form-title').textContent = (a ? a.emoji + ' ' + a.name : '') + ' — Weekly';
+  document.getElementById('form-body').innerHTML =
+    '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">Weekly target: ' + fmt(weeklyTarget) + '</div>' +
+    '<div class="form-row"><label class="form-label">Amount Committed ($)</label><input type="number" id="fm-amount" placeholder="0" value="' + (a ? a.weeklyCommitted || 0 : 0) + '"></div>';
+  document.getElementById('form-modal').style.display = 'flex';
+  setTimeout(function() { var el = document.getElementById('fm-amount'); if(el) el.focus(); }, 100);
 }
 
 function submitForm() {
-  if(!formCtx) return;
-  const {type,id,subtype,realid}=formCtx;
+  if (!formCtx) return;
+  var type = formCtx.type, id = formCtx.id;
 
-  if(type==='alloc'||type==='bills') {
-    const emoji=document.getElementById('fm-emoji').value.trim()||'💰';
-    const name=document.getElementById('fm-name').value.trim();
-    const amount=parseFloat(document.getElementById('fm-amount').value);
-    if(!name||isNaN(amount)||amount<=0){toast('Fill in all fields');return;}
-    const arr=type==='alloc'?state.allocations:state.bills;
-    if(id){const item=arr.find(a=>a.id===id);if(item){item.emoji=emoji;item.name=name;item.amount=amount;}toast('Updated ✓');}
-    else{arr.push({id:Date.now(),emoji,name,amount,committed:0,done:false});toast('Added ✓');}
-    saveState();
-    if(type==='alloc') renderAlloc(); else renderBills();
-    renderDashboard();
-  }
-  else if(type==='commit') {
-    const val=parseFloat(document.getElementById('fm-amount').value);
-    if(isNaN(val)||val<0){toast('Enter a valid amount');return;}
-    const arr=subtype==='alloc'?state.allocations:state.bills;
-    const item=arr.find(a=>a.id===realid);
-    if(item){item.committed=val;item.done=val>=item.amount;}
-    saveState();
-    if(subtype==='alloc') renderAlloc(); else renderBills();
-    toast(item?.done?'✅ Done!':'Progress saved ✓');
-  }
-  else if(type==='goal') {
-    const emoji=document.getElementById('fm-emoji').value.trim()||'🎯';
-    const name=document.getElementById('fm-name').value.trim();
-    const target=parseFloat(document.getElementById('fm-amount').value);
-    const meta=document.getElementById('fm-meta')?.value.trim()||'';
-    const savedEl=document.getElementById('fm-saved');
-    if(!name||isNaN(target)||target<=0){toast('Fill in all fields');return;}
-    if(id){
-      const item=state.goals.find(g=>g.id===id);
-      if(item){item.emoji=emoji;item.name=name;item.target=target;item.meta=meta;if(savedEl)item.saved=parseFloat(savedEl.value)||item.saved;}
-      toast('Goal updated ✓');
+  if (type === 'alloc' || type === 'bills') {
+    var emoji = document.getElementById('fm-emoji').value.trim() || '💰';
+    var name = document.getElementById('fm-name').value.trim();
+    var amount = parseFloat(document.getElementById('fm-amount').value);
+    var dueDayEl = document.getElementById('fm-dueday');
+    var dueDay = dueDayEl ? parseInt(dueDayEl.value) || null : undefined;
+    if (!name || isNaN(amount) || amount <= 0) { toast('Fill in all fields'); return; }
+    var arr = type === 'alloc' ? state.allocations : state.bills;
+    if (id) {
+      var item = arr.find(function(a) { return a.id === id; });
+      if (item) { item.emoji = emoji; item.name = name; item.amount = amount; if (dueDay !== undefined) item.dueDay = dueDay; }
+      toast('Updated');
     } else {
-      state.goals.push({id:Date.now(),emoji,name,target,saved:0,color:'#c8ff00',meta});
-      toast('Goal added ✓');
+      var newItem = {id:Date.now(), emoji:emoji, name:name, amount:amount, committed:0, done:false};
+      if (type === 'bills') newItem.dueDay = dueDay || null;
+      if (type === 'alloc') newItem.weeklyCommitted = 0;
+      arr.push(newItem);
+      toast('Added');
+    }
+    saveState();
+    if (type === 'alloc') renderAlloc(); else renderBills();
+    renderDashboard();
+  } else if (type === 'commit') {
+    var val = parseFloat(document.getElementById('fm-amount').value);
+    if (isNaN(val) || val < 0) { toast('Enter a valid amount'); return; }
+    var arr = formCtx.subtype === 'alloc' ? state.allocations : state.bills;
+    var item = arr.find(function(a) { return a.id === formCtx.realid; });
+    if (item) { item.committed = val; item.done = val >= item.amount; }
+    saveState();
+    if (formCtx.subtype === 'alloc') renderAlloc(); else renderBills();
+    toast(item && item.done ? 'Done!' : 'Saved');
+  } else if (type === 'goal') {
+    var emoji = document.getElementById('fm-emoji').value.trim() || '🎯';
+    var name = document.getElementById('fm-name').value.trim();
+    var target = parseFloat(document.getElementById('fm-amount').value);
+    var meta = (document.getElementById('fm-meta') || {}).value || '';
+    var savedEl = document.getElementById('fm-saved');
+    if (!name || isNaN(target) || target <= 0) { toast('Fill in all fields'); return; }
+    if (id) {
+      var item = state.goals.find(function(g) { return g.id === id; });
+      if (item) { item.emoji = emoji; item.name = name; item.target = target; item.meta = meta; if (savedEl) item.saved = parseFloat(savedEl.value) || item.saved; }
+      toast('Goal updated');
+    } else {
+      state.goals.push({id:Date.now(), emoji:emoji, name:name, target:target, saved:0, color:'#c8ff00', meta:meta});
+      toast('Goal added');
     }
     saveState(); renderGoals(); renderDashGoals();
+  } else if (type === 'goal_update') {
+    var val = parseFloat(document.getElementById('fm-amount').value);
+    if (isNaN(val) || val < 0) { toast('Enter valid amount'); return; }
+    var item = state.goals.find(function(g) { return g.id === id; });
+    if (item) item.saved = val;
+    saveState(); renderGoals(); renderDashGoals(); toast('Progress updated');
+  } else if (type === 'weekly_income') {
+    var val = parseFloat(document.getElementById('fm-amount').value);
+    if (isNaN(val) || val <= 0) { toast('Enter a valid amount'); return; }
+    state.weeklyIncomeOverride = val; saveState(); renderWeekly(); toast('Weekly income updated');
+  } else if (type === 'weekly_alloc') {
+    var val = parseFloat(document.getElementById('fm-amount').value);
+    if (isNaN(val) || val < 0) { toast('Enter a valid amount'); return; }
+    var a = state.allocations.find(function(x) { return x.id === id; });
+    if (a) a.weeklyCommitted = val;
+    saveState(); renderWeekly(); renderDashboard();
+    toast(a && val >= formCtx.weeklyTarget ? 'Done!' : 'Saved');
   }
-  else if(type==='goal_update') {
-    const val=parseFloat(document.getElementById('fm-amount').value);
-    if(isNaN(val)||val<0){toast('Enter valid amount');return;}
-    const item=state.goals.find(g=>g.id===id);
-    if(item) item.saved=val;
-    saveState(); renderGoals(); renderDashGoals();
-    toast('Progress updated ✓');
-  }
-
   closeForm();
 }
 
-function closeForm(){document.getElementById('form-modal').style.display='none';formCtx=null;}
+function closeForm() { document.getElementById('form-modal').style.display = 'none'; formCtx = null; }
 
-// ── CONFIRM ───────────────────────────────────────────────────────────
-let pendingDel=null;
-function confirmDelete(type,id,name) {
-  pendingDel={type,id};
-  document.getElementById('confirm-title').textContent=`Remove "${name}"?`;
-  document.getElementById('confirm-sub').textContent='This cannot be undone.';
-  document.getElementById('confirm-modal').style.display='flex';
+// CONFIRM
+var pendingDel = null;
+function confirmDelete(type, id, name) {
+  pendingDel = {type:type, id:id};
+  document.getElementById('confirm-title').textContent = 'Remove "' + name + '"?';
+  document.getElementById('confirm-sub').textContent = 'This cannot be undone.';
+  document.getElementById('confirm-modal').style.display = 'flex';
 }
 function confirmAction() {
-  if(!pendingDel) return;
-  const {type,id}=pendingDel;
-  if(type==='alloc'){state.allocations=state.allocations.filter(a=>a.id!==id);renderAlloc();}
-  else if(type==='bills'){state.bills=state.bills.filter(b=>b.id!==id);renderBills();}
-  else if(type==='goal'){state.goals=state.goals.filter(g=>g.id!==id);renderGoals();renderDashGoals();}
+  if (!pendingDel) return;
+  var type = pendingDel.type, id = pendingDel.id;
+  if (type === 'alloc') { state.allocations = state.allocations.filter(function(a) { return a.id !== id; }); renderAlloc(); }
+  else if (type === 'bills') { state.bills = state.bills.filter(function(b) { return b.id !== id; }); renderBills(); }
+  else if (type === 'goal') { state.goals = state.goals.filter(function(g) { return g.id !== id; }); renderGoals(); renderDashGoals(); }
   saveState(); renderDashboard(); closeConfirm(); toast('Removed');
 }
-function closeConfirm(){document.getElementById('confirm-modal').style.display='none';pendingDel=null;}
+function closeConfirm() { document.getElementById('confirm-modal').style.display = 'none'; pendingDel = null; }
 
-// ── SWIPE ─────────────────────────────────────────────────────────────
-function setupSwipe(selector,bgClass,onSwipe) {
-  document.querySelectorAll(selector).forEach(el=>{
-    let sx=0,cx=0,drag=false;
-    const T=70;
-    el.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;drag=true;el.classList.add('swiping');},{passive:true});
-    el.addEventListener('touchmove',e=>{
-      if(!drag) return; cx=e.touches[0].clientX-sx;
-      if(cx<0){const d=Math.min(Math.abs(cx),100);el.style.transform=`translateX(${-d}px)`;const bg=el.querySelector('.'+bgClass);if(bg)bg.style.opacity=Math.min(d/T,1);}
-    },{passive:true});
-    el.addEventListener('touchend',()=>{
-      drag=false; el.classList.remove('swiping');
-      if(cx<-T){el.style.transform='';const bg=el.querySelector('.'+bgClass);if(bg)bg.style.opacity=0;onSwipe(parseInt(el.dataset.id));}
-      else{el.style.transform='';const bg=el.querySelector('.'+bgClass);if(bg)bg.style.opacity=0;}
-      cx=0;
+// SWIPE
+function setupSwipe(selector, bgClass, onSwipe) {
+  document.querySelectorAll(selector).forEach(function(el) {
+    var sx = 0, cx = 0, drag = false;
+    var T = 70;
+    el.addEventListener('touchstart', function(e) { sx = e.touches[0].clientX; drag = true; el.classList.add('swiping'); }, {passive:true});
+    el.addEventListener('touchmove', function(e) {
+      if (!drag) return;
+      cx = e.touches[0].clientX - sx;
+      if (cx < 0) {
+        var d = Math.min(Math.abs(cx), 100);
+        el.style.transform = 'translateX(' + (-d) + 'px)';
+        var bg = el.querySelector('.' + bgClass);
+        if (bg) bg.style.opacity = Math.min(d / T, 1);
+      }
+    }, {passive:true});
+    el.addEventListener('touchend', function() {
+      drag = false; el.classList.remove('swiping');
+      if (cx < -T) {
+        el.style.transform = '';
+        var bg = el.querySelector('.' + bgClass);
+        if (bg) bg.style.opacity = 0;
+        onSwipe(parseInt(el.dataset.id));
+      } else {
+        el.style.transform = '';
+        var bg = el.querySelector('.' + bgClass);
+        if (bg) bg.style.opacity = 0;
+      }
+      cx = 0;
     });
   });
 }
 
-// ── ALLOCATIONS ───────────────────────────────────────────────────────
+// ALLOCATIONS
 function renderAlloc() {
-  const grid=document.getElementById('alloc-grid');
-  if(!state.allocations?.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1">No allocations yet.</div>';return;}
-
-  if(reorderMode.alloc) {
-    grid.style.gridTemplateColumns='1fr';
-    grid.innerHTML=state.allocations.map((a,i)=>`
-      <div class="reorder-item">
-        <div style="flex:1"><div style="font-weight:700;font-size:13px;">${a.emoji} ${a.name}</div><div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${fmt(a.amount)}/mo</div></div>
-        <div class="reorder-arrows">
-          <button onclick="reorderAlloc(${a.id},-1)" ${i===0?'disabled':''}>↑</button>
-          <button onclick="reorderAlloc(${a.id},1)" ${i===state.allocations.length-1?'disabled':''}>↓</button>
-        </div>
-      </div>`).join('');
+  var grid = document.getElementById('alloc-grid');
+  if (!state.allocations.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No allocations yet.</div>'; return; }
+  if (reorderMode.alloc) {
+    grid.style.gridTemplateColumns = '1fr';
+    grid.innerHTML = state.allocations.map(function(a, i) {
+      return '<div class="reorder-item"><div style="flex:1"><div style="font-weight:700;font-size:13px;">' + a.emoji + ' ' + a.name + '</div><div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);">' + fmt(a.amount) + '/mo</div></div><div class="reorder-arrows"><button onclick="reorderAlloc(' + a.id + ',-1)" ' + (i===0?'disabled':'') + '>↑</button><button onclick="reorderAlloc(' + a.id + ',1)" ' + (i===state.allocations.length-1?'disabled':'') + '>↓</button></div></div>';
+    }).join('');
     return;
   }
-
-  grid.style.gridTemplateColumns='1fr 1fr';
-  grid.innerHTML=state.allocations.map(a=>{
-    const c=a.committed||0,pct=Math.min((c/a.amount)*100,100),done=c>=a.amount;
-    return `<div class="alloc-item${done?' style="border:1px solid rgba(200,255,0,0.25);"':''}" data-id="${a.id}">
-      <div class="alloc-swipe-bg"></div>
-      <div class="alloc-content">
-        <div style="font-size:12px;font-weight:700;cursor:pointer;" onclick="openForm('alloc',${a.id})">${a.emoji} ${a.name} <span style="color:var(--muted);font-size:11px;">✎</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;">
-          <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);cursor:pointer;" onclick="openForm('alloc',${a.id})">${fmt(a.amount)}</div>
-          ${done?'<div style="font-size:14px;">✅</div>':`<div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);">${fmt(c)}</div>`}
-        </div>
-        <div style="background:var(--bg);border-radius:99px;height:4px;margin:6px 0 4px;overflow:hidden;">
-          <div style="height:100%;border-radius:99px;width:${pct}%;background:${done?'var(--accent)':'var(--accent2)'};transition:width 0.6s;"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">${Math.round(pct)}% done</div>
-          <button onclick="openCommit('alloc',${a.id})" style="background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;">${done?'edit':'+ log'}</button>
-        </div>
-      </div>
-    </div>`;
+  grid.style.gridTemplateColumns = '1fr 1fr';
+  grid.innerHTML = state.allocations.map(function(a) {
+    var c = a.committed || 0, pct = Math.min((c / a.amount) * 100, 100), done = c >= a.amount;
+    return '<div class="alloc-item' + (done ? '" style="border:1px solid rgba(200,255,0,0.25);' : '"') + ' data-id="' + a.id + '">' +
+      '<div class="alloc-swipe-bg"></div>' +
+      '<div class="alloc-content">' +
+        '<div style="font-size:12px;font-weight:700;cursor:pointer;" onclick="openForm(\'alloc\',' + a.id + ')">' + a.emoji + ' ' + a.name + ' <span style="color:var(--muted);font-size:10px;">✎</span></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;">' +
+          '<div style="font-family:\'Space Mono\',monospace;font-size:18px;font-weight:700;color:var(--accent);cursor:pointer;" onclick="openForm(\'alloc\',' + a.id + ')">' + fmt(a.amount) + '</div>' +
+          (done ? '<div style="font-size:14px;">✅</div>' : '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--accent);">' + fmt(c) + '</div>') +
+        '</div>' +
+        '<div style="background:var(--bg);border-radius:99px;height:4px;margin:6px 0 4px;overflow:hidden;"><div style="height:100%;border-radius:99px;width:' + pct + '%;background:' + (done ? 'var(--accent)' : 'var(--accent2)') + ';transition:width 0.6s;"></div></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">' + Math.round(pct) + '% done</div>' +
+          '<button onclick="openCommit(\'alloc\',' + a.id + ')" style="background:none;border:none;color:var(--muted);font-family:\'Space Mono\',monospace;font-size:10px;cursor:pointer;">' + (done ? 'edit' : '+ log') + '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
-  setupSwipe('.alloc-item[data-id]','alloc-swipe-bg',id=>{
-    const a=state.allocations.find(x=>x.id===id);
-    if(a) confirmDelete('alloc',id,a.name);
+  setupSwipe('.alloc-item[data-id]', 'alloc-swipe-bg', function(id) {
+    var a = state.allocations.find(function(x) { return x.id === id; });
+    if (a) confirmDelete('alloc', id, a.name);
   });
 }
 
-// ── FIXED BILLS ───────────────────────────────────────────────────────
+// BILLS
 function toggleBillPaid(id) {
-  const b = state.bills.find(b=>b.id===id);
+  var b = state.bills.find(function(x) { return x.id === id; });
   if (!b) return;
   b.done = !b.done;
   b.committed = b.done ? b.amount : 0;
-  saveState(); renderBills(); renderDashboard();
-  toast(b.done ? '✅ Paid!' : 'Marked unpaid');
+  saveState(); renderBills(); renderWeekly(); renderDashboard();
+  toast(b.done ? 'Paid!' : 'Marked unpaid');
 }
 
 function renderBills() {
-  const list=document.getElementById('bills-list');
-  if(!state.bills?.length){list.innerHTML='<div class="empty-state">No fixed bills yet.</div>';return;}
-
-  if(reorderMode.bills) {
-    list.innerHTML=state.bills.map((b,i)=>`
-      <div class="reorder-item">
-        <div style="flex:1"><div style="font-weight:700;font-size:13px;">${b.emoji} ${b.name}</div><div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${fmt(b.amount)}/mo · fixed</div></div>
-        <div class="reorder-arrows">
-          <button onclick="reorderBills(${b.id},-1)" ${i===0?'disabled':''}>↑</button>
-          <button onclick="reorderBills(${b.id},1)" ${i===state.bills.length-1?'disabled':''}>↓</button>
-        </div>
-      </div>`).join('');
+  var list = document.getElementById('bills-list');
+  if (!state.bills.length) { list.innerHTML = '<div class="empty-state">No fixed bills yet.</div>'; return; }
+  if (reorderMode.bills) {
+    list.innerHTML = state.bills.map(function(b, i) {
+      return '<div class="reorder-item"><div style="flex:1"><div style="font-weight:700;font-size:13px;">' + b.emoji + ' ' + b.name + '</div><div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);">' + fmt(b.amount) + '/mo</div></div><div class="reorder-arrows"><button onclick="reorderBills(' + b.id + ',-1)" ' + (i===0?'disabled':'') + '>↑</button><button onclick="reorderBills(' + b.id + ',1)" ' + (i===state.bills.length-1?'disabled':'') + '>↓</button></div></div>';
+    }).join('');
     return;
   }
-
-  list.innerHTML=state.bills.map(b=>{
-    const done=b.done||false;
-    return `<div class="bill-item${done?' style="border:1px solid rgba(200,255,0,0.25);"':''}" data-id="${b.id}" onclick="toggleBillPaid(${b.id})">
-      <div class="bill-swipe-bg"></div>
-      <div class="bill-content">
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div style="font-size:14px;font-weight:700;">${b.emoji} ${b.name}</div>
-            <button onclick="event.stopPropagation();openForm('bills',${b.id})" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0;">✎</button>
-          </div>
-          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;">${fmt(b.amount)}/month · ${done?'<span style="color:var(--accent);">paid ✓</span>':'tap to mark paid'}</div>
-        </div>
-        <div style="margin-left:12px;flex-shrink:0;font-size:22px;transition:all 0.2s;">
-          ${done?'✅':'⬜'}
-        </div>
-      </div>
-    </div>`;
+  list.innerHTML = state.bills.map(function(b) {
+    var urg = billUrgency(b), urgC = urgencyColor(urg), urgT = urgencyLabel(b);
+    var border = b.done ? 'border:1px solid rgba(200,255,0,0.25);' : urg === 'overdue' ? 'border:1px solid rgba(255,68,68,0.4);' : urg === 'urgent' ? 'border:1px solid rgba(255,149,0,0.4);' : '';
+    return '<div class="bill-item" style="' + border + '" data-id="' + b.id + '" onclick="toggleBillPaid(' + b.id + ')">' +
+      '<div class="bill-swipe-bg"></div>' +
+      '<div class="bill-content">' +
+        '<div style="flex:1;">' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<div style="font-size:14px;font-weight:700;">' + b.emoji + ' ' + b.name + '</div>' +
+            '<button onclick="event.stopPropagation();openForm(\'bills\',' + b.id + ')" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0;">✎</button>' +
+          '</div>' +
+          '<div style="font-family:\'Space Mono\',monospace;font-size:11px;margin-top:2px;"><span style="color:var(--muted);">' + fmt(b.amount) + ' · </span><span style="color:' + urgC + ';">' + urgT + '</span></div>' +
+        '</div>' +
+        '<div style="margin-left:12px;flex-shrink:0;font-size:22px;">' + (b.done ? '✅' : '⬜') + '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
-  setupSwipe('.bill-item[data-id]','bill-swipe-bg',id=>{
-    const b=state.bills.find(x=>x.id===id);
-    if(b) confirmDelete('bills',id,b.name);
+  setupSwipe('.bill-item[data-id]', 'bill-swipe-bg', function(id) {
+    var b = state.bills.find(function(x) { return x.id === id; });
+    if (b) confirmDelete('bills', id, b.name);
   });
 }
 
-// ── GOALS ─────────────────────────────────────────────────────────────
+// GOALS
 function renderGoals() {
-  const list=document.getElementById('goals-list');
-  if(!state.goals?.length){list.innerHTML='<div class="empty-state">No goals yet. Add one below.</div>';return;}
-
-  if(reorderMode.goals) {
-    list.innerHTML=state.goals.map((g,i)=>`
-      <div class="reorder-item">
-        <div style="flex:1"><div style="font-weight:700;font-size:13px;">${g.emoji} ${g.name}</div><div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${fmt(g.saved)} / ${fmt(g.target)}</div></div>
-        <div class="reorder-arrows">
-          <button onclick="reorderGoals(${g.id},-1)" ${i===0?'disabled':''}>↑</button>
-          <button onclick="reorderGoals(${g.id},1)" ${i===state.goals.length-1?'disabled':''}>↓</button>
-        </div>
-      </div>`).join('');
+  var list = document.getElementById('goals-list');
+  if (!state.goals.length) { list.innerHTML = '<div class="empty-state">No goals yet.</div>'; return; }
+  if (reorderMode.goals) {
+    list.innerHTML = state.goals.map(function(g, i) {
+      return '<div class="reorder-item"><div style="flex:1"><div style="font-weight:700;font-size:13px;">' + g.emoji + ' ' + g.name + '</div><div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);">' + fmt(g.saved) + ' / ' + fmt(g.target) + '</div></div><div class="reorder-arrows"><button onclick="reorderGoals(' + g.id + ',-1)" ' + (i===0?'disabled':'') + '>↑</button><button onclick="reorderGoals(' + g.id + ',1)" ' + (i===state.goals.length-1?'disabled':'') + '>↓</button></div></div>';
+    }).join('');
     return;
   }
-
-  list.innerHTML=state.goals.map(g=>{
-    const pct=Math.min((g.saved/g.target)*100,100),done=g.saved>=g.target;
-    return `<div class="goal-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-        <div style="flex:1;">
-          <div style="font-size:15px;font-weight:700;cursor:pointer;" onclick="openForm('goal',${g.id})">${g.name} <span style="color:var(--muted);font-size:11px;">✎</span></div>
-          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;">${g.meta||''}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="font-size:20px;">${g.emoji}</div>
-          <button onclick="confirmDelete('goal',${g.id},'${g.name}')" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;">✕</button>
-        </div>
-      </div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${g.color||'#c8ff00'};"></div></div>
-      <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">
-        <span style="color:var(--text);font-weight:700;">${fmt(g.saved)} saved</span>
-        <span>${fmt(g.target)} target</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">${Math.round(pct)}% · ${done?'🎉 Complete!':fmt(g.target-g.saved)+' to go'}</div>
-        <button onclick="openForm('goal_update',${g.id})" class="mini-btn">+ UPDATE</button>
-      </div>
-    </div>`;
+  list.innerHTML = state.goals.map(function(g) {
+    var pct = Math.min((g.saved / g.target) * 100, 100), done = g.saved >= g.target;
+    return '<div class="goal-card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:15px;font-weight:700;cursor:pointer;" onclick="openForm(\'goal\',' + g.id + ')">' + g.name + ' <span style="color:var(--muted);font-size:11px;">✎</span></div>' +
+          '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);margin-top:3px;">' + (g.meta || '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<div style="font-size:20px;">' + g.emoji + '</div>' +
+          '<button onclick="confirmDelete(\'goal\',' + g.id + ',\'' + g.name.replace(/'/g, "\\'") + '\')" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;">✕</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + (g.color || '#c8ff00') + ';"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">' +
+        '<span style="color:var(--text);font-weight:700;">' + fmt(g.saved) + ' saved</span>' +
+        '<span>' + fmt(g.target) + ' target</span>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">' +
+        '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">' + Math.round(pct) + '% · ' + (done ? 'Complete!' : fmt(g.target - g.saved) + ' to go') + '</div>' +
+        '<button onclick="openForm(\'goal_update\',' + g.id + ')" class="mini-btn">+ UPDATE</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
 function renderDashGoals() {
-  const list=document.getElementById('dash-goals-list');
-  if(!state.goals?.length){list.innerHTML='';return;}
-  list.innerHTML=state.goals.map(g=>{
-    const pct=Math.min((g.saved/g.target)*100,100);
-    return `<div class="goal-card" style="margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div style="font-size:14px;font-weight:700;">${g.emoji} ${g.name}</div>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">${Math.round(pct)}%</div>
-      </div>
-      <div class="bar-track" style="margin:0 0 6px;"><div class="bar-fill" style="width:${pct}%;background:${g.color||'#c8ff00'};"></div></div>
-      <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">
-        <span>${fmt(g.saved)} saved</span><span>${fmt(g.target)}</span>
-      </div>
-    </div>`;
+  var list = document.getElementById('dash-goals-list');
+  if (!list) return;
+  list.innerHTML = state.goals.map(function(g) {
+    var pct = Math.min((g.saved / g.target) * 100, 100);
+    return '<div class="goal-card" style="margin-bottom:10px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+        '<div style="font-size:14px;font-weight:700;">' + g.emoji + ' ' + g.name + '</div>' +
+        '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--accent);">' + Math.round(pct) + '%</div>' +
+      '</div>' +
+      '<div class="bar-track" style="margin:0 0 6px;"><div class="bar-fill" style="width:' + pct + '%;background:' + (g.color || '#c8ff00') + ';"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);">' +
+        '<span>' + fmt(g.saved) + ' saved</span><span>' + fmt(g.target) + '</span>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
-// ── EXPENSES ──────────────────────────────────────────────────────────
-function addExpense() {
-  const name=document.getElementById('exp-name').value.trim();
-  const amount=parseFloat(document.getElementById('exp-amount').value);
-  const cat=document.getElementById('exp-cat').value;
-  if(!name||isNaN(amount)||amount<=0){toast('Fill in all fields');return;}
-  state.expenses.push({id:Date.now(),name,amount,cat,date:new Date().toLocaleDateString()});
-  saveState(); document.getElementById('exp-name').value=''; document.getElementById('exp-amount').value='';
-  renderExpenses(); renderDashboard(); toast('Logged ✓');
-}
-function deleteExpense(id){state.expenses=state.expenses.filter(e=>e.id!==id);saveState();renderExpenses();renderDashboard();}
-function renderExpenses() {
-  const varExp=getVarTotal(),fixed=getFixedTotal(),total=varExp+fixed;
-  const remaining=Math.max(0,INCOME-total);
-  document.getElementById('exp-total').textContent=fmt(total);
-  document.getElementById('exp-remaining').textContent=fmt(remaining);
-  const list=document.getElementById('expense-list');
-  if(!state.expenses?.length){list.innerHTML='<div class="empty-state">No expenses yet.</div>';return;}
-  list.innerHTML=state.expenses.slice().reverse().map(e=>`
-    <div class="expense-item">
-      <div><div class="expense-name">${e.name}</div><div class="expense-tag">${e.cat} · ${e.date}</div></div>
-      <div style="display:flex;align-items:center;gap:10px;"><div class="expense-amt">${fmt(e.amount)}</div><button class="del-btn" onclick="deleteExpense(${e.id})">✕</button></div>
-    </div>`).join('');
+// WEEKLY
+function quickLog() {
+  var amount = parseFloat(document.getElementById('quick-amount').value);
+  if (isNaN(amount) || amount <= 0) { toast('Enter an amount'); return; }
+  state.weeklyExpenses.push({id:Date.now(), name:'Misc', amount:amount, cat:'other', date:new Date().toLocaleDateString()});
+  saveState();
+  document.getElementById('quick-amount').value = '';
+  renderWeekly(); renderDashboard(); toast(fmt(amount) + ' logged');
 }
 
-// ── VINYL ─────────────────────────────────────────────────────────────
-function addVinyl() {
-  const title=document.getElementById('vinyl-title').value.trim();
-  const price=parseFloat(document.getElementById('vinyl-price').value);
-  const cost=parseFloat(document.getElementById('vinyl-cost').value)||0;
-  const status=document.getElementById('vinyl-status').value;
-  if(!title||isNaN(price)||price<=0){toast('Fill in title and price');return;}
-  state.vinyl.push({id:Date.now(),title,price,cost,status});
-  saveState(); document.getElementById('vinyl-title').value=''; document.getElementById('vinyl-price').value=''; document.getElementById('vinyl-cost').value='';
-  renderVinyl(); toast('Record added ✓');
-}
-function deleteVinyl(id){state.vinyl=state.vinyl.filter(v=>v.id!==id);saveState();renderVinyl();}
-function markSold(id){const v=state.vinyl.find(v=>v.id===id);if(v){v.status='sold';saveState();renderVinyl();toast('Marked sold ✓');}}
-function renderVinyl() {
-  const count=state.vinyl.length;
-  const listedVal=state.vinyl.filter(v=>v.status==='listed').reduce((s,v)=>s+v.price,0);
-  const soldVal=state.vinyl.filter(v=>v.status==='sold').reduce((s,v)=>s+v.price,0);
-  document.getElementById('vinyl-count').textContent=count;
-  document.getElementById('vinyl-value').textContent=fmt(listedVal);
-  document.getElementById('vinyl-sold').textContent=fmt(soldVal);
-  const list=document.getElementById('vinyl-list');
-  if(!count){list.innerHTML='<div class="empty-state">No records yet.</div>';return;}
-  list.innerHTML=state.vinyl.slice().reverse().map(v=>`
-    <div class="vinyl-item">
-      <div>
-        <div style="font-size:14px;font-weight:700;">${v.title}</div>
-        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;">cost: ${fmt(v.cost)} · margin: ${fmt(v.price-v.cost)}</div>
-        ${v.status!=='sold'?`<button onclick="markSold(${v.id})" style="background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;padding:3px 0;">mark sold</button>`:''}
-      </div>
-      <div style="text-align:right;">
-        <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--accent);">${fmt(v.price)}</div>
-        <div><span class="vinyl-status ${v.status}">${v.status}</span></div>
-        <button class="del-btn" onclick="deleteVinyl(${v.id})" style="display:block;margin-top:4px;">✕</button>
-      </div>
-    </div>`).join('');
+function addWeeklyExpense() {
+  var name = document.getElementById('wexp-name').value.trim();
+  var amount = parseFloat(document.getElementById('wexp-amount').value);
+  var cat = document.getElementById('wexp-cat').value;
+  if (!name || isNaN(amount) || amount <= 0) { toast('Fill in all fields'); return; }
+  state.weeklyExpenses.push({id:Date.now(), name:name, amount:amount, cat:cat, date:new Date().toLocaleDateString()});
+  saveState();
+  document.getElementById('wexp-name').value = '';
+  document.getElementById('wexp-amount').value = '';
+  renderWeekly(); renderDashboard(); toast('Logged');
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────
-function renderAll(){renderDashboard();renderExpenses();renderGoals();renderVinyl();}
+function deleteWeeklyExpense(id) {
+  state.weeklyExpenses = state.weeklyExpenses.filter(function(e) { return e.id !== id; });
+  saveState(); renderWeekly(); renderDashboard();
+}
+
+function renderWeekly() {
+  var wi = getWeeklyIncome();
+  var spent = getWeeklySpent();
+  var surplus = Math.max(0, wi - spent);
+  var expPct = Math.min((spent / wi) * 100, 100), surPct = Math.min((surplus / wi) * 100, 100);
+  var bounds = getWeekBounds(), wn = getWeekNumber();
+
+  var wb = document.getElementById('week-badge');
+  if (wb) {
+    var parts = bounds.label.split('–');
+    wb.innerHTML = '<span style="color:var(--text);">' + parts[0] + '</span><span style="color:var(--accent);">–' + (parts[1] || '') + '</span>';
+  }
+  var wnum = document.getElementById('week-num'); if (wnum) wnum.textContent = 'W' + wn;
+  var wid = document.getElementById('weekly-income-display');
+  if (wid) { wid.textContent = fmt(wi); wid.onclick = setWeeklyOverride; }
+  var on = document.getElementById('weekly-override-note');
+  if (on) on.textContent = state.weeklyIncomeOverride ? '(adjusted · tap to change)' : '(÷ 4.33 · tap to adjust)';
+
+  var ws = document.getElementById('weekly-surplus'); if (ws) ws.textContent = fmt(surplus);
+  var wsp = document.getElementById('weekly-spent'); if (wsp) wsp.textContent = fmt(spent);
+  var wds = document.getElementById('w-dual-sur'); if (wds) wds.style.width = surPct + '%';
+  var wde = document.getElementById('w-dual-exp'); if (wde) wde.style.width = expPct + '%';
+  var wsl = document.getElementById('w-sur-lbl'); if (wsl) wsl.textContent = 'Left ' + fmt(surplus);
+  var wml = document.getElementById('w-mid-lbl'); if (wml) wml.textContent = 'of ' + fmt(wi);
+  var wel = document.getElementById('w-exp-lbl'); if (wel) wel.textContent = 'Spent ' + fmt(spent);
+
+  // Bills this week
+  var billsEl = document.getElementById('weekly-bills');
+  if (billsEl) {
+    var thisWeek = state.bills.filter(isBillDueThisWeek);
+    if (!thisWeek.length) {
+      billsEl.innerHTML = '<div class="empty-state">No bills due this week</div>';
+    } else {
+      var sorted = thisWeek.slice().sort(function(a, b) { return a.done - b.done; });
+      billsEl.innerHTML = sorted.map(function(b) {
+        var urg = billUrgency(b), urgC = urgencyColor(urg), urgT = urgencyLabel(b);
+        var border = b.done ? 'border:1px solid rgba(200,255,0,0.25);' : urg === 'overdue' ? 'border:1px solid rgba(255,68,68,0.4);' : urg === 'urgent' ? 'border:1px solid rgba(255,149,0,0.4);' : '';
+        return '<div class="bill-item" style="' + border + 'margin-bottom:8px;" onclick="toggleBillPaid(' + b.id + ')">' +
+          '<div class="bill-swipe-bg"></div>' +
+          '<div class="bill-content">' +
+            '<div style="flex:1;"><div style="font-size:14px;font-weight:700;">' + b.emoji + ' ' + b.name + '</div>' +
+            '<div style="font-family:\'Space Mono\',monospace;font-size:11px;margin-top:2px;"><span style="color:var(--muted);">' + fmt(b.amount) + ' · </span><span style="color:' + urgC + ';">' + urgT + '</span></div></div>' +
+            '<div style="font-size:22px;margin-left:12px;">' + (b.done ? '✅' : '⬜') + '</div>' +
+          '</div></div>';
+      }).join('');
+    }
+  }
+
+  // Weekly allocs
+  var waGrid = document.getElementById('weekly-alloc-grid');
+  if (waGrid) {
+    waGrid.style.gridTemplateColumns = '1fr 1fr';
+    waGrid.innerHTML = state.allocations.map(function(a) {
+      var wt = Math.round(a.amount / 4.33);
+      var c = a.weeklyCommitted || 0, pct = Math.min((c / wt) * 100, 100), done = c >= wt;
+      return '<div class="alloc-item' + (done ? '" style="border:1px solid rgba(200,255,0,0.25);' : '"') + '">' +
+        '<div class="alloc-content">' +
+          '<div style="font-size:12px;font-weight:700;">' + a.emoji + ' ' + a.name + '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;">' +
+            '<div style="font-family:\'Space Mono\',monospace;font-size:16px;font-weight:700;color:var(--accent);">' + fmt(wt) + '</div>' +
+            (done ? '<div style="font-size:13px;">✅</div>' : '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--accent);">' + fmt(c) + '</div>') +
+          '</div>' +
+          '<div style="background:var(--bg);border-radius:99px;height:4px;margin:6px 0 4px;overflow:hidden;"><div style="height:100%;border-radius:99px;width:' + pct + '%;background:' + (done ? 'var(--accent)' : 'var(--accent2)') + ';transition:width 0.6s;"></div></div>' +
+          '<div style="display:flex;justify-content:space-between;">' +
+            '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">' + Math.round(pct) + '% done</div>' +
+            '<button onclick="logWeeklyAlloc(' + a.id + ',' + wt + ')" style="background:none;border:none;color:var(--muted);font-family:\'Space Mono\',monospace;font-size:10px;cursor:pointer;">' + (done ? 'edit' : '+ log') + '</button>' +
+          '</div>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  // Expense list
+  var expList = document.getElementById('weekly-expense-list');
+  if (expList) {
+    if (!state.weeklyExpenses.length) {
+      expList.innerHTML = '<div class="empty-state">No expenses this week.</div>';
+    } else {
+      expList.innerHTML = state.weeklyExpenses.slice().reverse().map(function(e) {
+        return '<div class="expense-item">' +
+          '<div><div class="expense-name">' + e.name + '</div><div class="expense-tag">' + e.cat + ' · ' + e.date + '</div></div>' +
+          '<div style="display:flex;align-items:center;gap:10px;"><div class="expense-amt">' + fmt(e.amount) + '</div><button class="del-btn" onclick="deleteWeeklyExpense(' + e.id + ')">✕</button></div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+}
+
+// INIT
+function renderAll() { renderDashboard(); renderWeekly(); renderGoals(); }
 loadState();
 renderAll();
+
 </script>
 </body>
 </html>
