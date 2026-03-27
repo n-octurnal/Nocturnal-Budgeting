@@ -398,7 +398,7 @@ function loadState() {
       state.bills = p.bills && p.bills.length ? p.bills : JSON.parse(JSON.stringify(DEF_BILLS));
       state.goals = p.goals && p.goals.length ? p.goals : JSON.parse(JSON.stringify(DEF_GOALS));
       // Migrate missing fields
-      state.allocations = state.allocations.map(function(a) { return Object.assign({committed:0, done:false, weeklyCommitted:0}, a); });
+      state.allocations = state.allocations.map(function(a) { return Object.assign({committed:0, done:false, weeklyCommitted:0, weeklyOverride:null}, a); });
       state.bills = state.bills.map(function(b) { return Object.assign({committed:0, done:false, dueDay:null}, b); });
       state.goals = state.goals.map(function(g) { return Object.assign({color:'#c8ff00', meta:''}, g); });
       // Monthly reset
@@ -419,7 +419,7 @@ function loadState() {
         state.weeklyExpenses = [];
         state.currentWeek = currentWeek();
         state.weeklyIncomeOverride = null;
-        state.allocations = state.allocations.map(function(a) { return Object.assign({}, a, {weeklyCommitted:0}); });
+        state.allocations = state.allocations.map(function(a) { return Object.assign({}, a, {weeklyCommitted:0, weeklyOverride:null}); });
         saveState();
       }
     } else {
@@ -552,13 +552,17 @@ function isBillDueThisWeek(b) {
 }
 
 // TOTALS
-function getFixedTotal() { return state.bills.reduce(function(s,b) { return s + b.amount; }, 0); }
+function getFixedTotal() { return state.bills.reduce(function(s,b) { return s + (b.done ? b.amount : 0); }, 0); }
 function getVarTotal() { return state.weeklyExpenses.reduce(function(s,e) { return s + parseFloat(e.amount || 0); }, 0); }
 function getAllocCommitted() { return state.allocations.reduce(function(s,a) { return s + (a.committed || 0); }, 0); }
 function getTotalSpent() { return getFixedTotal() + getVarTotal() + getAllocCommitted(); }
 function getWeeklyExpTotal() { return state.weeklyExpenses.reduce(function(s,e) { return s + parseFloat(e.amount || 0); }, 0); }
 function getWeeklyAllocCommitted() { return state.allocations.reduce(function(s,a) { return s + (a.weeklyCommitted || 0); }, 0); }
-function getWeeklySpent() { return getWeeklyExpTotal() + getWeeklyAllocCommitted(); }
+function getWeeklyPaidBills() {
+  // Only count bills that are due this week AND have been marked paid
+  return state.bills.reduce(function(s,b) { return s + (b.done && isBillDueThisWeek(b) ? b.amount : 0); }, 0);
+}
+function getWeeklySpent() { return getWeeklyExpTotal() + getWeeklyAllocCommitted() + getWeeklyPaidBills(); }
 
 // DASHBOARD
 function renderDashboard() {
@@ -658,11 +662,14 @@ function openCommit(subtype, realid) {
 
 function logWeeklyAlloc(id, weeklyTarget) {
   var a = state.allocations.find(function(x) { return x.id === id; });
-  formCtx = {type:'weekly_alloc', id:id, weeklyTarget:weeklyTarget};
+  var currentTarget = a.weeklyOverride || weeklyTarget;
+  formCtx = {type:'weekly_alloc', id:id, weeklyTarget:currentTarget};
   document.getElementById('form-title').textContent = (a ? a.emoji + ' ' + a.name : '') + ' — Weekly';
   document.getElementById('form-body').innerHTML =
-    '<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">Weekly target: ' + fmt(weeklyTarget) + '</div>' +
-    '<div class="form-row"><label class="form-label">Amount Committed ($)</label><input type="number" id="fm-amount" placeholder="0" value="' + (a ? a.weeklyCommitted || 0 : 0) + '"></div>';
+    '<div class="form-row"><label class="form-label">Weekly Target ($) <span style="color:var(--muted);font-size:10px;">default: ' + fmt(weeklyTarget) + '</span></label>' +
+    '<input type="number" id="fm-weekly-target" placeholder="' + weeklyTarget + '" value="' + currentTarget + '"></div>' +
+    '<div class="form-row"><label class="form-label">Amount Committed This Week ($)</label>' +
+    '<input type="number" id="fm-amount" placeholder="0" value="' + (a ? a.weeklyCommitted || 0 : 0) + '"></div>';
   document.getElementById('form-modal').style.display = 'flex';
   setTimeout(function() { var el = document.getElementById('fm-amount'); if(el) el.focus(); }, 100);
 }
@@ -730,11 +737,20 @@ function submitForm() {
     state.weeklyIncomeOverride = val; saveState(); renderWeekly(); toast('Weekly income updated');
   } else if (type === 'weekly_alloc') {
     var val = parseFloat(document.getElementById('fm-amount').value);
+    var targetEl = document.getElementById('fm-weekly-target');
+    var newTarget = targetEl ? parseFloat(targetEl.value) : formCtx.weeklyTarget;
     if (isNaN(val) || val < 0) { toast('Enter a valid amount'); return; }
     var a = state.allocations.find(function(x) { return x.id === id; });
-    if (a) a.weeklyCommitted = val;
-    saveState(); renderWeekly(); renderDashboard();
-    toast(a && val >= formCtx.weeklyTarget ? 'Done!' : 'Saved');
+    if (a) {
+      a.weeklyCommitted = val;
+      a.weeklyOverride = (!isNaN(newTarget) && newTarget > 0) ? newTarget : null;
+      var effectiveTarget = a.weeklyOverride || Math.round(a.amount / 4.33);
+      a.committed = val;
+      a.done = val >= a.amount;
+    }
+    saveState(); renderWeekly(); renderAlloc(); renderDashboard();
+    var effectiveTarget = a ? (a.weeklyOverride || Math.round(a.amount / 4.33)) : formCtx.weeklyTarget;
+    toast(a && val >= effectiveTarget ? 'Done!' : 'Saved');
   }
   closeForm();
 }
@@ -1004,18 +1020,18 @@ function renderWeekly() {
   if (waGrid) {
     waGrid.style.gridTemplateColumns = '1fr 1fr';
     waGrid.innerHTML = state.allocations.map(function(a) {
-      var wt = Math.round(a.amount / 4.33);
+      var wt = a.weeklyOverride || Math.round(a.amount / 4.33);
       var c = a.weeklyCommitted || 0, pct = Math.min((c / wt) * 100, 100), done = c >= wt;
       return '<div class="alloc-item' + (done ? '" style="border:1px solid rgba(200,255,0,0.25);' : '"') + '">' +
         '<div class="alloc-content">' +
-          '<div style="font-size:12px;font-weight:700;">' + a.emoji + ' ' + a.name + '</div>' +
+          '<div style="font-size:12px;font-weight:700;cursor:pointer;" onclick="openForm(\'alloc\',' + a.id + ')">' + a.emoji + ' ' + a.name + ' <span style="color:var(--muted);font-size:10px;">✎</span></div>' +
           '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;">' +
-            '<div style="font-family:\'Space Mono\',monospace;font-size:16px;font-weight:700;color:var(--accent);">' + fmt(wt) + '</div>' +
+            '<div style="font-family:\'Space Mono\',monospace;font-size:16px;font-weight:700;color:var(--accent);">' + fmt(wt) + '/wk</div>' +
             (done ? '<div style="font-size:13px;">✅</div>' : '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--accent);">' + fmt(c) + '</div>') +
           '</div>' +
           '<div style="background:var(--bg);border-radius:99px;height:4px;margin:6px 0 4px;overflow:hidden;"><div style="height:100%;border-radius:99px;width:' + pct + '%;background:' + (done ? 'var(--accent)' : 'var(--accent2)') + ';transition:width 0.6s;"></div></div>' +
           '<div style="display:flex;justify-content:space-between;">' +
-            '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">' + Math.round(pct) + '% done</div>' +
+            '<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">' + Math.round(pct) + '% · mo: ' + fmt(a.amount) + '</div>' +
             '<button onclick="logWeeklyAlloc(' + a.id + ',' + wt + ')" style="background:none;border:none;color:var(--muted);font-family:\'Space Mono\',monospace;font-size:10px;cursor:pointer;">' + (done ? 'edit' : '+ log') + '</button>' +
           '</div>' +
         '</div></div>';
