@@ -44,9 +44,11 @@
   .income-card .small { font-family: 'Space Mono', monospace; font-size: 10px; opacity: 0.6; }
 
   .split-row { display: flex; gap: 10px; margin-bottom: 12px; }
-  .split-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-  .split-card .val { font-size: 22px !important; font-weight: 700; margin-top: 4px; }
-  .split-card.green .val { color: var(--accent); }
+  .split-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; transition: border-color 0.4s ease; }
+  .split-card .val { font-size: 22px !important; font-weight: 700; margin-top: 4px; transition: color 0.4s ease; }
+  .split-card.left-card { flex: 1.4; }
+  .split-card.left-card .val { font-size: 30px !important; }
+  .split-card.left-card .card-label { font-size: 11px; }
   .split-card.orange .val { color: var(--accent2); }
 
   .dual-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; }
@@ -164,7 +166,7 @@
   </div>
 
   <div class="split-row">
-    <div class="split-card green"><div class="card-label">Surplus</div><div class="val" id="dash-surplus">$0</div></div>
+    <div class="split-card left-card" id="dash-left-card"><div class="card-label">Left This Month</div><div class="val" id="dash-surplus">$0</div></div>
     <div class="split-card orange"><div class="card-label">Spent</div><div class="val" id="dash-expenses">$0</div></div>
   </div>
 
@@ -222,7 +224,7 @@
   </div>
 
   <div class="split-row">
-    <div class="split-card green"><div class="card-label">Surplus</div><div class="val" id="weekly-surplus">$0</div></div>
+    <div class="split-card left-card" id="weekly-left-card"><div class="card-label">Left This Week</div><div class="val" id="weekly-surplus">$0</div></div>
     <div class="split-card orange"><div class="card-label">Spent</div><div class="val" id="weekly-spent">$0</div></div>
   </div>
 
@@ -577,6 +579,22 @@ function renderDashboard() {
   var expPct = Math.min((spent / INCOME) * 100, 100), surPct = Math.min((surplus / INCOME) * 100, 100);
   document.getElementById('dash-surplus').textContent = fmt(surplus);
   document.getElementById('dash-expenses').textContent = fmt(spent);
+  // Dynamic color based on how much is left
+  var leftCard = document.getElementById('dash-left-card');
+  var leftVal = document.querySelector('#dash-left-card .val');
+  if (leftCard && leftVal) {
+    var pctSpent = INCOME > 0 ? spent / INCOME : 0;
+    if (pctSpent >= 0.9) {
+      leftVal.style.color = 'var(--danger)';
+      leftCard.style.borderColor = 'rgba(255,68,68,0.4)';
+    } else if (pctSpent >= 0.7) {
+      leftVal.style.color = '#ff9500';
+      leftCard.style.borderColor = 'rgba(255,149,0,0.3)';
+    } else {
+      leftVal.style.color = 'var(--accent)';
+      leftCard.style.borderColor = 'var(--border)';
+    }
+  }
   document.getElementById('dual-sur').style.width = surPct + '%';
   document.getElementById('dual-exp').style.width = expPct + '%';
   document.getElementById('dual-sur-lbl').textContent = 'Left ' + fmt(surplus);
@@ -987,6 +1005,22 @@ function renderWeekly() {
 
   var ws = document.getElementById('weekly-surplus'); if (ws) ws.textContent = fmt(surplus);
   var wsp = document.getElementById('weekly-spent'); if (wsp) wsp.textContent = fmt(spent);
+  // Dynamic color
+  var wLeftCard = document.getElementById('weekly-left-card');
+  var wLeftVal = document.querySelector('#weekly-left-card .val');
+  if (wLeftCard && wLeftVal) {
+    var wPctSpent = wi > 0 ? spent / wi : 0;
+    if (wPctSpent >= 0.9) {
+      wLeftVal.style.color = 'var(--danger)';
+      wLeftCard.style.borderColor = 'rgba(255,68,68,0.4)';
+    } else if (wPctSpent >= 0.7) {
+      wLeftVal.style.color = '#ff9500';
+      wLeftCard.style.borderColor = 'rgba(255,149,0,0.3)';
+    } else {
+      wLeftVal.style.color = 'var(--accent)';
+      wLeftCard.style.borderColor = 'var(--border)';
+    }
+  }
   var wds = document.getElementById('w-dual-sur'); if (wds) wds.style.width = surPct + '%';
   var wde = document.getElementById('w-dual-exp'); if (wde) wde.style.width = expPct + '%';
   var wsl = document.getElementById('w-sur-lbl'); if (wsl) wsl.textContent = 'Left ' + fmt(surplus);
